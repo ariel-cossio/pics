@@ -1,0 +1,33 @@
+<div class="container">
+
+<div class="well">
+    <!-- Page Header -->
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header"><%=session[:identity]%>'s Gallery
+                <small>/</small>
+            </h1>
+        </div>
+    </div>
+    <!-- /.row -->
+
+    <!-- Projects Row -->
+    <div class="row">
+    <% @items.each do |item| %>
+        <div class="col-md-4 portfolio-item">
+            <a href="#">
+                <img style="max-height: 300px; max-width: 300px;" class="img-responsive img-rounded" src="<%=item.url %>" alt="">
+            </a>
+            <h3>
+                <a href="#"><%= item.name %></a>
+            </h3>
+            <p>
+                <a href="#">Delete</a> | <a href="#">Move</a>
+            </p>
+        </div>
+    <% end %>
+    </div>
+</div>
+<!-- /end row -->
+</div>
+<!-- /.container -->

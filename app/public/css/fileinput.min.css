@@ -1,0 +1,9 @@
+$("#input-24").fileinput({
+initialPreview: [
+"<img src='/images/moon.jpg' class='file-preview-image' alt='The Moon' title='The Moon'>",
+"<img src='/images/earth.jpg' class='file-preview-image' alt='The Earth' title='The Earth'>",
+],
+overwriteInitial: false,
+maxFileSize: 100,
+initialCaption: "The Moon and the Earth"
+});
