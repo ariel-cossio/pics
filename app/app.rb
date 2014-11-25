@@ -112,4 +112,13 @@ post '/secure/add_folder' do
   redirect to '/secure/gallery'
 end
 
+get '/signin/form' do 
+  erb :signin_form
+end
 
+post '/signin/attempt' do
+  @username = params['username']
+  session[:identity] = @username
+  where_user_came_from = session[:previous_url] || '/secure/gallery'
+  redirect to where_user_came_from 
+end

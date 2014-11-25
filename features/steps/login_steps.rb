@@ -3,7 +3,7 @@ Given(/^I have opened the page$/) do
 end
 
 Then(/^I should see the Picture manager message "(.*?)"$/) do |login_message|
-  expect(page).to have_content login_message
+	page.has_content?(login_message)
 end
 
 Then(/^I should see the user as "(.*?)"$/) do |user|
@@ -23,7 +23,7 @@ When(/^I select the "(.*?)" admin option$/) do |login_option|
 end
 
 When(/^I fill the user name as "(.*?)"$/) do |user_name|
-  	fill_in "username", :with => user_name
+  fill_in "username", :with => user_name
   click_button "log in"
 end
 

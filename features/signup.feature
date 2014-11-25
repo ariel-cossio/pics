@@ -6,16 +6,18 @@ Feature: Sign up a new user
         Given I have opened the page
         Then I should see the Picture manager message "Please login to see your pictures"
         And I should see the user as "Hello stranger"
+        And I should see the sign up link
+        When I click the sign up link
         And I should see the sign up form
-        And I should see the user name text field
-        And I should see the email text field
 
 
     Scenario: I can sign up a new user
         Given I have opened the page
         Then I should see the Picture manager message "Please login to see your pictures"
         And I should see the user as "Hello stranger"
-        And I should see the sign up form
+        And I should see the sign up link
+        When I click the sign up link
+        Then I should see the sign up form
         When I set the user name as "picture"
         And I set the email as "picture@hotmai.com"
         Then I should see the user as "picture"
