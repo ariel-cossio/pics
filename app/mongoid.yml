@@ -1,0 +1,13 @@
+development:
+  sessions:
+    default:
+      database: cms
+      hosts:
+        - 10.31.32.31:27017
+production:
+  sessions:
+    default:
+      uri: <%= ENV['MONGOHQ<em>URL'] %>
+      options:
+        skip_version_check: true
+        safe: true
