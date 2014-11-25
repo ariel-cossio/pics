@@ -3,6 +3,10 @@ source "https://rubygems.org"
 gem 'json'
 gem 'rest-client'
 gem 'sinatra'
+gem 'mongoid'
+gem 'carrierwave'
+gem 'carrierwave-mongoid'
+gem 'mongoid-rspec', '~> 2.0.0.rc1'
 
 group :development do
   gem 'rerun'
