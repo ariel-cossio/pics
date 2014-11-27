@@ -3,6 +3,7 @@ require 'spec_helper'
 describe User do
     it { should have_fields(:user_name, :password) }
     it { should validate_presence_of(:user_name) }
+    it { should have_one(:folder) }
 end
 
 describe Image do
@@ -16,3 +17,6 @@ describe FSElement do
     it { should validate_presence_of(:name) }
     it { should validate_presence_of(:created) }
 end
+
+describe Folder do
+	it { should have_many(:fselemets)}
