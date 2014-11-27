@@ -278,20 +278,37 @@ end
 post '/api/add/content' do
 
   return_message = {} 
-  print(params[:data])
-  jdata = JSON.parse(params[:data],:symbolize_names => true) 
-  if jdata.has_key?(:name) 
-    if jdata[:type] == "image"
-      root.add_image(jdata[:name], jdata[:data])
-    elsif jdata[:type] == "folder"
-      root.add_folder(jdata[:name])
-    else
-      status 500
-    end
-    return_message[:status] = 'succeed'
-  else
-    return_message[:status] = 'unable to add - missing data'
+  if params[:data] == nil
+    return_message[:status] = "error"
+    return_message[:message] = "no 'data' value is given'"
+    return return_message.to_json 
   end
+
+  jdata = JSON.parse(params[:data], :symbolize_names => true) 
+
+  if not jdata.has_key?(:name) 
+    return_message[:status] = "error"
+    return_message[:message] = "unable to add - missing data"
+    return return_message.to_json 
+  end
+
+  if jdata[:type] != "image" and jdata[:type] != "folder" 
+    return_message[:status] = "error"
+    return_message[:message] = "media type not supported '#{jdata[:type]}'"
+    return return_message.to_json 
+  end
+
+  if jdata[:type] == "image"
+    root.add_image(jdata[:name], jdata[:data])
+  end
+
+  if jdata[:type] == "folder"
+    root.add_folder(jdata[:name])
+  end
+
+  return_message[:status] = "succeed"
+  return_message[:message] = "#{jdata[:type]} added succeedfuly"
+
   return_message.to_json 
 end
 
