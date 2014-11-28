@@ -185,6 +185,7 @@ class ElemFolder < FSElement
   end
 end
 
+
 class ElemImage < FSElement
   attr_accessor :data, :preview
   @@type_name = "image"
@@ -197,32 +198,42 @@ class ElemImage < FSElement
     super(name)
     @data = data
     @random_generator = Random.new(12345)
-    set_preview
+    set_preview()
   end
 
   # Set a thumbnail for the current image
-  def set_preview
+  def set_preview()
     temporal = get_random_dir()
-    FileUtils::mkdir_p temporal
 
-    file = File.open("./#{temporal}/#{@name}", 'wb') do|f|
+    FileUtils::mkdir_p "./temp/#{temporal}"
+
+    File.open("./temp/#{temporal}/#{@name}", 'wb') do |f|
         f.write(Base64.decode64(@data))
+        f.close
     end
 
-    img = ImageList.new("./#{temporal}/#{@name}")
+    img = ImageList.new("./temp/#{temporal}/#{@name}")
     width, height = 50, 50
     thumb = img.scale(width, height)
-    thumb.write("./#{temporal}/thumb_#{@name}")
+    thumb.write("./temp/#{temporal}/thumb_#{@name}")
+    img.destroy!
+    thumb.destroy!
+    GC.start
 
-    f_thumb = File.open("./#{temporal}/thumb_#{@name}", 'rb').read
-    encoded_string = Base64.encode64(f_thumb)
+    f_thumb = File.open("./temp/#{temporal}/thumb_#{@name}", 'rb')
+    thumb_s = f_thumb.read
+    encoded_string = Base64.encode64(thumb_s)
+    f_thumb.close
 
     @preview = encoded_string
-    FileUtils.rm_rf('./#{temporal}')
+
+    FileUtils.rm_rf(Dir.glob('./temp/#{temporal}/*'))
+    FileUtils.rm_rf('./temp/#{temporal}/')
+    true
   end
 
   # Generate a random dir name
-  def get_random_dir
+  def get_random_dir()
     random_folder = @random_generator.rand(1000000)
     return random_folder.to_s
   end
