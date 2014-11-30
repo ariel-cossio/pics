@@ -22,7 +22,7 @@ When(/^POST "(.*?)" using json$/) do |url, string|
   '''
   data = JSON.parse(string)
   if data.has_key?("data")
-    data["data"] = image_base64()
+    data["data"] = send(data["data"])
   end
 
   http = get_http()

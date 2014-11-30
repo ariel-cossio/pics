@@ -22,10 +22,32 @@ Feature: manage resources by REST
     Scenario: Add my fist image
         When POST "api/add/content" using json
         """
-        { "type":"image", "name":"wolf.jpg", "data":"data_content" }
+        { "type":"image", "name":"wolf.jpg", "data":"base64_wolf_img" }
         """
         Then I expect HTTP code 200
         And I expect JSON equivalent to
         """
         { "status":"succeed", "message":"image added succeedfuly"}
+        """
+
+    Scenario: Add my second folder duplicated name
+        When POST "api/add/content" using json
+        """
+        { "type":"folder", "name":"vacations" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"error", "message":"folder 'vacations' already exist"}
+        """
+
+    Scenario: Add my second image duplicated name
+        When POST "api/add/content" using json
+        """
+        { "type":"image", "name":"wolf.jpg", "data":"base64_wolf2_img" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"error", "message":"image 'wolf.jpg' already exist"}
         """
