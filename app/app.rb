@@ -114,14 +114,89 @@ end
 
 
 
+
 require 'sinatra/reloader' if development?
 require 'json'
 require 'base64'
 require 'fileutils'
 require 'rubygems'
 require 'RMagick'
+require 'net/http'
 include Magick
 
+
+###
+# Rest client
+#############
+
+class PicsRestClient
+
+  # :TODO add code to generate folder automatically when user is login
+  # Static user folder
+  IMAGES = "./public/pictures"
+  def initialize()
+    FileUtils::mkdir_p IMAGES
+  end
+
+  #
+  # Params:
+  # +url+:: /api/content
+  def get_content(url)
+    http = get_http()
+    request = get_request(normalize(url))
+    execute_http_request(http, request)
+    items = JSON.parse(last_json)
+    puts(items.inspect())
+    items
+  end
+
+  def add_content(path_name, type)
+    boundary = "AaB03xxA"
+    url = "api/add/content"
+    http = get_http()
+    request = post_request(normalize(url), boundary)
+    execute_http_request(http, request)
+    items = JSON.parse(last_json)
+    $message_status = items["message"]
+
+    if items["status"] != "succeed"
+      return false
+    end
+
+    if type == "image"
+      preview_data = items["preview"]
+      path = add_content_image(path_name, preview_data)
+    elsif type == "folder"
+      path = add_content_folder(path_name)
+    else
+      raise "Type not supported"
+    end
+    return path
+  end
+
+  def add_content_folder(path_name)
+    FileUtils::mkdir_p IMAGES + path_name
+    return IMAGES + path_name
+  end
+
+  def add_content_image(path_name, preview_data)
+    
+    File.open(IMAGES + path_name, 'wb') do |f|
+        f.write(Base64.decode64(preview_data))
+        f.close
+    end
+    return IMAGES + path_name
+  end
+
+  def normalize()
+    return "http://localhost:4567/#{url}"
+  end
+
+end
+
+########
+#
+########
 
 module Comparable
   # Compare Elem objects by name and type_name
