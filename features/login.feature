@@ -30,3 +30,30 @@ Feature: Login Page
     	Then I should see the "Logout" admin option
     	When I select the "Logout" admin option
     	Then I should see the user as "Hello stranger"
+
+    Scenario: I login as admin twice the data persists
+        Given I have opened the page
+        Then I should see the Picture manager message "Please login to see your pictures"
+        When I click the user dropdown "Hello stranger"
+        And I select the "Login" admin option
+        And I fill the user name as "admin"        
+        #Add I fill the password as "admin123"
+        Then I should see the user as "admin"
+        And I should see the user "admin" gallery
+        When I have opened the page
+        Then I should see the Picture manager message "Please login to see your pictures"
+        When I click the user dropdown "Hello stranger"
+        And I select the "Login" admin option
+        And I fill the user name as "admin"        
+        #Add I fill the password as "admin123"
+        Then I should see the user as "admin"
+        And I should see the user "admin" gallery
+
+    Scenario: I login as a not registered user
+        Given I have opened the page
+        Then I should see the Picture manager message "Please login to see your pictures"
+        When I click the user dropdown "Hello stranger"
+        And I select the "Login" admin option
+        And I fill the user name as "Unregistered"        
+        #Add I fill the password as "admin123"
+        Then I should see the sign up form
