@@ -1,6 +1,22 @@
 require 'rubygems'
 require 'sinatra'
 
+# Services import
+require 'sinatra/reloader' if development?
+require 'rubygems'
+require 'net/http'
+require 'json'
+require 'base64'
+require 'fileutils'
+require 'RMagick'
+require '../features/support/http_services_helper'
+require 'rest-client'
+include Magick
+
+
+
+$host = "127.0.0.1"
+$port = 4567
 
 class Item
 
@@ -75,13 +91,8 @@ get '/logout' do
 end	
 
 get '/secure/gallery' do
-  @pictures = Dir.glob("public/pictures/*.*")
-  @items =  []
-
-
-  @pictures.each do |picture|
-    @items.push(Item.new('1', picture.sub!(/public\//, '/'), File.basename(picture), 1))
-  end
+  pics_obj = PicsRestClient.new()
+  @items = pics_obj.get_content("/api/content")
   erb  :gallery
 end 
 
@@ -91,14 +102,17 @@ end
 
 post '/secure/load_file' do 
 
-  if params['fileName']  && params['upload']
-    filename = params['fileName'][:filename]
-    tempfile = params['fileName'][:tempfile]
-    target = "public/pictures/#{filename}"
+    picture_to_upload = params["picturetoupload"]
 
-    File.open(target, 'wb') {|f| f.write tempfile.read }
-    #TODO: Add code to save Display name and tags.
-  end
+    f_thumb = picture_to_upload[:tempfile]
+    thumb_s = f_thumb.read
+    content = Base64.encode64(thumb_s)
+    f_thumb.close
+
+    picture_obj = PicsRestClient.new()
+    result = picture_obj.add_content("#{picture_to_upload[:filename]}", "image", content)
+    # :TODO Add code to display warning message if image is not following some standards
+    # :TODO Add code to save Display name and tags.
 
   redirect to '/secure/gallery'
 end
@@ -108,20 +122,92 @@ get '/secure/add_folder' do
 end
 
 post '/secure/add_folder' do
-  #TODO add functionality to add folder
+
+  folder_name = params["folderName"]
+  folder_obj = PicsRestClient.new()
+  result = folder_obj.add_content("/#{folder_name}", "folder", "")
+  # :TODO add code to display warning message when folder is not created
   redirect to '/secure/gallery'
 end
 
+#############
+# Rest client
+#############
 
+class PicsRestClient
 
-require 'sinatra/reloader' if development?
-require 'json'
-require 'base64'
-require 'fileutils'
-require 'rubygems'
-require 'RMagick'
-include Magick
+  # :TODO add code to generate folder automatically when user is login
+  # Static user folder  ./public/pictures
 
+  IMAGES = "./public/pictures"
+
+  def initialize()
+    FileUtils::mkdir_p IMAGES
+  end
+
+  #
+  # Params:
+  # +url+:: /api/content
+  def get_content(url)
+    final_url = "http://localhost:4567#{url}"
+    response = RestClient.get final_url, {:params => {}}
+    items = JSON.parse(response.body)
+    items
+  end
+
+  def add_content(path_name, type, content)
+    boundary = "AaB03xxA"
+    url = "/api/add/content"
+    final_url = "http://localhost:4567#{url}"
+
+    response = RestClient.post final_url,:data => {:type=>type, :name=>path_name, 
+                                                   :data => content}.to_json, :accept => :json
+
+    items = JSON.parse(response.body)
+    $message_status = items["message"]
+    if items["status"] != "succeed"
+      return false
+    end
+
+    if type == "image"
+      
+      preview_data = items["preview"]
+      if preview_data == nil
+        return
+      end
+      path = add_content_image(path_name, preview_data)
+
+    elsif type == "folder"
+      path = add_content_folder(path_name)
+    else
+      raise "Type not supported"
+    end
+    return path
+  end
+
+  def add_content_folder(path_name)
+    FileUtils::mkdir_p IMAGES + path_name
+    return IMAGES + path_name
+  end
+
+  def add_content_image(path_name, preview_data)
+    
+    File.open(IMAGES + path_name, 'wb') do |f|
+        f.write(Base64.decode64(preview_data))
+        f.close
+    end
+    return IMAGES + path_name
+  end
+  
+  def normalize(url)
+    return "http://#{$host}:#{$port}/#{url}"
+  end
+
+end
+
+########
+#
+########
 
 module Comparable
   # Compare Elem objects by name and type_name
@@ -239,7 +325,6 @@ class ElemImage < FSElement
   # Set a thumbnail for the current image
   def set_preview()
     temporal = get_random_dir()
-
     FileUtils::mkdir_p "./temp/#{temporal}"
 
     File.open("./temp/#{temporal}/#{@name}", 'wb') do |f|
@@ -248,7 +333,7 @@ class ElemImage < FSElement
     end
 
     img = ImageList.new("./temp/#{temporal}/#{@name}")
-    width, height = 50, 50
+    width, height = 150, 150
     thumb = img.scale(width, height)
     thumb.write("./temp/#{temporal}/thumb_#{@name}")
     img.destroy!
