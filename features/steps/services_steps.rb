@@ -55,3 +55,13 @@ Then(/^I expect JSON equivalent to$/) do |string|
   
   actual.should == expected
 end
+
+Then(/^I expect JSON with preview equivalent to$/) do |string|
+  actual = JSON.parse(last_json())
+  expected = JSON.parse(string)
+  if expected[1].has_key?("preview")
+    expected[1]["preview"] = send(expected[1]["preview"])
+  end
+  
+  actual.should == expected
+end

@@ -51,3 +51,12 @@ Feature: manage resources by REST
         """
         { "status":"error", "message":"image 'wolf.jpg' already exist"}
         """
+
+    Scenario: List root folder with content
+
+        When GET "api/content"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"vacations", "type":"folder"}, {"name":"wolf.jpg", "type":"image", "preview":"base64_wolf_img_preview"}]
+        """
