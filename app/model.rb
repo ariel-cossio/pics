@@ -49,26 +49,7 @@ require 'base64'
 require 'fileutils'
 require 'RMagick'
 include Magick
-
-module Comparable
-  # Compare Elem objects by name and type_name
-  def <=>(elem)
-    comparison = self.name <=> elem.name
-
-    if comparison == 0
-      return self.type_name <=> elem.type_name
-    else
-      return comparison
-    end
-  end
-end
-
-#################
-# Model section #
-#################
-
-class DuplicateElementException < Exception
-end
+require_relative 'model_utils'
 
 
 class FSElement
@@ -80,12 +61,12 @@ class FSElement
 
   def self.type_name
     raise NotImplementError.new
-  end
+  end  
 
 end
 
 class ElemFolder < FSElement
-  include Comparable
+  include Visitable, Comparable
 
   attr_accessor :element_list, :type_name
   @@type_name = "folder"
@@ -142,12 +123,11 @@ class ElemFolder < FSElement
     @@type_name
   end
 
-  private :add_element
 end
 
 
 class ElemImage < FSElement
-  include Comparable
+  include Visitable, Comparable
 
   attr_accessor :data, :preview
   @@type_name = "image"
@@ -207,6 +187,7 @@ class ElemImage < FSElement
   private :set_preview, :get_random_dir
 
 end
+
 
 class User
   attr_accessor :username

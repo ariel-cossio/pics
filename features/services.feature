@@ -4,12 +4,12 @@ Feature: manage resources by REST
 
     Scenario: List all folders when user is new
 
-        When GET "api/content"
+        When GET "api/content/"
         Then I expect HTTP code 200
         And I expect JSON result is empty list
 
     Scenario: Add my first folder
-        When POST "api/add/content" using json
+        When POST "api/add/content/" using json
         """
         { "type":"folder", "name":"vacations" }
         """
@@ -20,7 +20,7 @@ Feature: manage resources by REST
         """
 
     Scenario: Add my fist image
-        When POST "api/add/content" using json
+        When POST "api/add/content/" using json
         """
         { "type":"image", "name":"wolf.jpg", "data":"base64_wolf_img" }
         """
@@ -31,7 +31,7 @@ Feature: manage resources by REST
         """
 
     Scenario: Add my second folder duplicated name
-        When POST "api/add/content" using json
+        When POST "api/add/content/" using json
         """
         { "type":"folder", "name":"vacations" }
         """
@@ -42,7 +42,7 @@ Feature: manage resources by REST
         """
 
     Scenario: Add my second image duplicated name
-        When POST "api/add/content" using json
+        When POST "api/add/content/" using json
         """
         { "type":"image", "name":"wolf.jpg", "data":"base64_wolf2_img" }
         """
@@ -50,4 +50,13 @@ Feature: manage resources by REST
         And I expect JSON equivalent to
         """
         { "status":"error", "message":"image 'wolf.jpg' already exist"}
+        """
+
+    Scenario: List root folder with content
+
+        When GET "api/content/"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"vacations", "type":"folder"}, {"name":"wolf.jpg", "type":"image", "preview":"base64_wolf_img_preview"}]
         """
