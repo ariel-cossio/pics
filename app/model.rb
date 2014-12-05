@@ -61,12 +61,12 @@ class FSElement
 
   def self.type_name
     raise NotImplementError.new
-  end
+  end  
 
 end
 
 class ElemFolder < FSElement
-  include Comparable
+  include Visitable, Comparable
 
   attr_accessor :element_list, :type_name
   @@type_name = "folder"
@@ -123,12 +123,11 @@ class ElemFolder < FSElement
     @@type_name
   end
 
-  private :add_element
 end
 
 
 class ElemImage < FSElement
-  include Comparable
+  include Visitable, Comparable
 
   attr_accessor :data, :preview
   @@type_name = "image"
@@ -188,6 +187,7 @@ class ElemImage < FSElement
   private :set_preview, :get_random_dir
 
 end
+
 
 class User
   attr_accessor :username
