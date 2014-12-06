@@ -11,7 +11,7 @@ Feature: manage resources by REST
     Scenario: Add my first folder
         When POST "api/add/content/" using json
         """
-        { "type":"folder", "name":"vacations" }
+        { "type":"folder", "name":"animals" }
         """
         Then I expect HTTP code 200
         And I expect JSON equivalent to
@@ -22,7 +22,7 @@ Feature: manage resources by REST
     Scenario: Add my fist image
         When POST "api/add/content/" using json
         """
-        { "type":"image", "name":"wolf.jpg", "data":"base64_wolf_img" }
+        { "type":"image", "name":"Clint-Eastwood.jpg", "data":"clint_eastwood_base64" }
         """
         Then I expect HTTP code 200
         And I expect JSON equivalent to
@@ -30,26 +30,26 @@ Feature: manage resources by REST
         { "status":"succeed", "message":"image added succeedfuly"}
         """
 
-    Scenario: Add my second folder duplicated name
+    Scenario: Add my second folder with duplicated name
         When POST "api/add/content/" using json
         """
-        { "type":"folder", "name":"vacations" }
+        { "type":"folder", "name":"animals" }
         """
         Then I expect HTTP code 200
         And I expect JSON equivalent to
         """
-        { "status":"error", "message":"folder 'vacations' already exist"}
+        { "status":"error", "message":"folder 'animals' already exist"}
         """
 
     Scenario: Add my second image duplicated name
         When POST "api/add/content/" using json
         """
-        { "type":"image", "name":"wolf.jpg", "data":"base64_wolf2_img" }
+        { "type":"image", "name":"Clint-Eastwood.jpg", "data":"white_wolf_base64_img" }
         """
         Then I expect HTTP code 200
         And I expect JSON equivalent to
         """
-        { "status":"error", "message":"image 'wolf.jpg' already exist"}
+        { "status":"error", "message":"image 'Clint-Eastwood.jpg' already exist"}
         """
 
     Scenario: List root folder with content
@@ -58,5 +58,45 @@ Feature: manage resources by REST
         Then I expect HTTP code 200
         And I expect JSON with preview equivalent to
         """
-        [{"name":"vacations", "type":"folder"}, {"name":"wolf.jpg", "type":"image", "preview":"base64_wolf_img_preview"}]
+        [{"name":"animals", "type":"folder"}, {"name":"Clint-Eastwood.jpg", "type":"image", "preview":"clint_eastwood_preview"}]
         """
+
+    Scenario: Add folder inside another folder
+
+        When POST "api/add/content/animals/" using json
+        """
+        { "type":"folder", "name":"bears" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"succeed", "message":"folder added succeedfuly" }
+        """
+
+    Scenario: Add image inside a folder
+
+        When POST "api/add/content/animals/" using json
+        """
+        { "type":"image", "name":"blue_eyes_wolf.jpg", "data":"blue_eyes_base64" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"succeed", "message":"image added succeedfuly" }
+        """
+
+
+    Scenario: List folder inside another folder with content
+
+        When GET "api/content/animals/"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bears","type":"folder"}, {"name":"blue_eyes_wolf.jpg", "type":"image", "preview":"blue_eyes_preview"}]
+        """
+
+    Scenario: List folder inside another folder and expect empty
+
+        When GET "api/content/animals/bears/"
+        Then I expect HTTP code 200
+        And I expect JSON result is empty list
