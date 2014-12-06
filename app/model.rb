@@ -155,7 +155,7 @@ class ElemImage < FSElement
 
     img = ImageList.new("./temp/#{temporal}/#{@name}")
     width, height = 150, 150
-    thumb = img.scale(width, height)
+    thumb = img.resize_to_fit(width, height)
     thumb.write("./temp/#{temporal}/thumb_#{@name}")
     img.destroy!
     thumb.destroy!
@@ -163,7 +163,7 @@ class ElemImage < FSElement
 
     f_thumb = File.open("./temp/#{temporal}/thumb_#{@name}", 'rb')
     thumb_s = f_thumb.read
-    encoded_string = Base64.encode64(thumb_s)
+    encoded_string = Base64.strict_encode64(thumb_s)
     f_thumb.close
 
     @preview = encoded_string
@@ -175,8 +175,8 @@ class ElemImage < FSElement
 
   # Generate a random dir name
   def get_random_dir()
-    random_folder = @random_generator.rand(1000000)
-    return random_folder.to_s
+    #random_folder = @random_generator.rand(1000000)
+    return (0...50).map { ('a'..'z').to_a[rand(26)] }.join
   end
 
   # Return the name of the type value of this class
