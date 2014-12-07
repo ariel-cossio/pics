@@ -22,7 +22,7 @@ get '/api/content/*' do
     visitant = GetImage.new(path)
     root.accept(visitant)
     result = visitant.get_result
-    if(image.nil?())
+    if(result.nil?())
       is_folder = true
     else
       is_folder = false
@@ -31,6 +31,7 @@ get '/api/content/*' do
   end
 
   if is_folder
+    #treat as a folder
     visitant = GetContent.new(path)
     root.accept(visitant)
     result = visitant.get_result
@@ -79,6 +80,11 @@ post '/api/add/content/*' do
 
   if jdata[:type] == "image"
     elem = ElemImage.new(jdata[:name], jdata[:data])
+    if jdata.has_key?(:tags)
+      jdata[:tags].each{|tag|
+        elem.add_tag(tag)
+      }
+    end
   end
 
   if jdata[:type] == "folder"
@@ -105,4 +111,66 @@ post '/api/add/content/*' do
   end
 
   return_message.to_json 
+end
+
+
+# Add or Remove a tag service for the given image
+# e.g. /api/tag/content/my_image.png
+post '/api/tag/content/*' do
+
+  path = params[:splat][0]
+
+  if path != ""
+    path = "/#{path}"
+  end
+
+  return_message = {}
+
+  if params[:data] == nil
+    return_message[:status] = "error"
+    return_message[:message] = "no 'data' value is given'"
+    return return_message.to_json 
+  end
+
+  jdata = JSON.parse(params[:data], :symbolize_names => true) 
+
+  if not jdata.has_key?(:operation) 
+    return_message[:status] = "error"
+    return_message[:message] = "unable to do something - missing 'operation' field"
+    return return_message.to_json 
+  end
+
+  if not jdata.has_key?(:tag) 
+    return_message[:status] = "error"
+    return_message[:message] = "unable to do something - missing 'tag' field"
+    return return_message.to_json 
+  end
+  
+  result = false
+  begin
+    visitant = ManageTag.new(path, jdata[:tag], jdata[:operation])
+    root.accept(visitant)
+    result = visitant.succeed
+  rescue UnknownTagOperation => e
+    return_message[:status] = "error"
+    return_message[:message] = e.message
+    return return_message.to_json
+  end
+
+  if result == false
+    return_message[:status] = "error"
+    return_message[:message] = "unable to #{jdata[:operation]} tag '#{jdata[:tag]}'"
+    return return_message.to_json 
+  end
+
+  if jdata[:operation] == "add"
+    message = "tag '#{jdata[:tag]}' added"
+  else 
+    message = "tag '#{jdata[:tag]}' deleted"
+  end
+
+  return_message[:status] = "succeed"
+  return_message[:message] = message
+  return_message.to_json
+
 end

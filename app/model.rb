@@ -12,36 +12,36 @@
 #end
 #
 #class FSElement
-#	include Mongoid::Document
-#	belongs_to :to_folder, :class_name => 'Folder', :inverse_of => :fselements
-#	field :path
-#	field :name, type: String
-#	field :created
-#	validates_presence_of :path
-#	validates_presence_of :name
-#	validates_presence_of :created
+# include Mongoid::Document
+# belongs_to :to_folder, :class_name => 'Folder', :inverse_of => :fselements
+# field :path
+# field :name, type: String
+# field :created
+# validates_presence_of :path
+# validates_presence_of :name
+# validates_presence_of :created
 #end
 #
 #class Image < FSElement
-#	include Mongoid::Document
-#	mount_uploader :image, ImageUploader, type: String
-#	field :alias, type: String
-#	field :size
-#	validates_presence_of :size
+# include Mongoid::Document
+# mount_uploader :image, ImageUploader, type: String
+# field :alias, type: String
+# field :size
+# validates_presence_of :size
 #end
 #
 #class Folder < FSElement
-#	include Mongoid::Document
-#	belongs_to :to_user, :class_name => 'User', :inverse_of => :folder
-#	has_many :fselements, :class_name => 'FSElement', :inverse_of => :to_folder
+# include Mongoid::Document
+# belongs_to :to_user, :class_name => 'User', :inverse_of => :folder
+# has_many :fselements, :class_name => 'FSElement', :inverse_of => :to_folder
 #end
 #
 #class User
-#	include Mongoid::Document
-#	has_one :folder, :class_name => 'Folder', :inverse_of => :to_user
-#	field :user_name, type: String
-#	field :password, type: String
-#	validates_presence_of :user_name
+# include Mongoid::Document
+# has_one :folder, :class_name => 'Folder', :inverse_of => :to_user
+# field :user_name, type: String
+# field :password, type: String
+# validates_presence_of :user_name
 #end
 
 require 'json'
@@ -68,7 +68,7 @@ end
 class ElemFolder < FSElement
   include Visitable, Comparable
 
-  attr_accessor :element_list, :type_name
+  attr_reader :element_list, :type_name
   @@type_name = "folder"
 
   def initialize name
@@ -129,18 +129,23 @@ end
 class ElemImage < FSElement
   include Visitable, Comparable
 
-  attr_accessor :data, :preview
+  attr_reader :data, :preview, :tags
   @@type_name = "image"
 
   # Create a new element image
   # Params:
   # +name+:: image name file
   # +data+:: raw data encoded in base64 format
-  def initialize(name, data)
+  def initialize(name, data = nil)
     super(name)
-    @data = data
-    @random_generator = Random.new(12345)
-    set_preview()
+
+    # Create a fake ElemImage
+    if not data.nil?
+      @data = data
+      set_preview()
+    end
+
+    @tags = Array.new
   end
 
   # Set a thumbnail for the current image
@@ -173,9 +178,35 @@ class ElemImage < FSElement
     true
   end
 
+  # Add a tag element to tags list
+  # Params:
+  # +tag+:: String tag element to be added
+  def add_tag(tag)
+    if not tag.kind_of?(String)
+      raise "tag '#{tag.inspect}' is not a String"
+    end
+
+    if not @tags.include?(tag)
+      @tags.push(tag)
+    end
+    
+  end
+
+  # Remove an existing tag
+  # Params:
+  # +tag+:: String tag to be removed
+  def delete_tag(tag)
+    if not tag.kind_of?(String)
+      raise "tag '#{tag.inspect}' is not a String"
+    end
+
+    if @tags.include?(tag)
+      @tags.delete(tag)
+    end
+  end
+
   # Generate a random dir name
   def get_random_dir()
-    #random_folder = @random_generator.rand(1000000)
     return (0...50).map { ('a'..'z').to_a[rand(26)] }.join
   end
 

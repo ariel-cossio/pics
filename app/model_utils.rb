@@ -3,6 +3,9 @@
 class DuplicateElementException < Exception
 end
 
+class UnknownTagOperation < Exception
+end
+
 module Comparable
   # Compare Elem objects by name and type_name
   def <=>(elem)

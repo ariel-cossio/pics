@@ -58,7 +58,7 @@ Feature: manage resources by REST
         Then I expect HTTP code 200
         And I expect JSON with preview equivalent to
         """
-        [{"name":"animals", "type":"folder"}, {"name":"Clint-Eastwood.jpg", "type":"image", "preview":"clint_eastwood_preview"}]
+        [{"name":"animals", "type":"folder"}, {"name":"Clint-Eastwood.jpg", "type":"image", "tags":[], "preview":"clint_eastwood_preview"}]
         """
 
     Scenario: Add folder inside another folder
@@ -92,7 +92,16 @@ Feature: manage resources by REST
         Then I expect HTTP code 200
         And I expect JSON with preview equivalent to
         """
-        [{"name":"bears","type":"folder"}, {"name":"blue_eyes_wolf.jpg", "type":"image", "preview":"blue_eyes_preview"}]
+        [{"name":"bears","type":"folder"}, {"name":"blue_eyes_wolf.jpg", "type":"image", "tags":[], "preview":"blue_eyes_preview"}]
+        """
+
+    Scenario: Retrieve an especific image content
+
+        When GET "api/content/animals/blue_eyes_wolf.jpg"
+        Then I expect HTTP code 200
+        And I expect JSON with data equivalent to
+        """
+        {"name":"blue_eyes_wolf.jpg", "type":"image", "data":"blue_eyes_base64"}
         """
 
     Scenario: List folder inside another folder and expect empty
@@ -100,3 +109,53 @@ Feature: manage resources by REST
         When GET "api/content/animals/bears/"
         Then I expect HTTP code 200
         And I expect JSON result is empty list
+
+
+
+#Feature: Manage tags by REST services
+#    As a user I should be able to add Image with tags, also remove them
+
+    Scenario: Add an image with tags
+
+        When POST "api/add/content/animals/bears/" using json
+        """
+        { "type":"image", "name":"bear_swimming.jpg", "tags":["swim", "cute"], "data":"bear_swimming_base64" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"succeed", "message":"image added succeedfuly" }
+        """
+
+    Scenario: Add a tag for an image
+
+        When POST "api/tag/content/animals/bears/bear_swimming.jpg" using json
+        """
+        { "operation":"add", "tag":"polar" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"succeed", "message":"tag 'polar' added" }
+        """
+
+    Scenario: Delete a tag for an image
+
+        When POST "api/tag/content/animals/bears/bear_swimming.jpg" using json
+        """
+        { "operation":"delete", "tag":"cute" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"succeed", "message":"tag 'cute' deleted" }
+        """
+
+    Scenario: List folder to see tag content
+
+        When GET "api/content/animals/bears/"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bear_swimming.jpg", "type":"image", "tags":["swim", "polar"], "preview":"bear_swimming_preview"}]
+        """

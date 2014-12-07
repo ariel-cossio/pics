@@ -59,8 +59,22 @@ end
 Then(/^I expect JSON with preview equivalent to$/) do |string|
   actual = JSON.parse(last_json())
   expected = JSON.parse(string)
-  if expected[1].has_key?("preview")
-    expected[1]["preview"] = send(expected[1]["preview"])
+  if expected.kind_of?(Array)
+    expected.each{|element|
+      if element.has_key?("preview")
+        element["preview"] = send(element["preview"])
+      end
+    }
+  end
+
+  actual.should == expected
+end
+
+Then(/^I expect JSON with data equivalent to$/) do |string|
+  actual = JSON.parse(last_json())
+  expected = JSON.parse(string)
+  if expected.has_key?("data")
+    expected["data"] = send(expected["data"])
   end
   
   actual.should == expected

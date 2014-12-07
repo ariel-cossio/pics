@@ -43,6 +43,7 @@ class GetContent < Visitor
     end
 end
 
+
 class GetImage < Visitor
     def initialize(image_path)
 
@@ -60,6 +61,8 @@ class GetImage < Visitor
 
     def visit_ElemImage(subject)
         temp_image = ElemImage.new(@image)
+
+        @right_place = @folders == @path
         if @right_place and subject == temp_image
             @result = subject
         end
@@ -67,8 +70,6 @@ class GetImage < Visitor
 
     def visit_ElemFolder(subject)
         @path.push(subject.name)
-
-        @right_place = @folders == @path
 
         subject.element_list.each{|elem|
             elem.accept(self)
@@ -107,7 +108,6 @@ class SetContent < Visitor
 
         if @folders == @path
             subject.add_element(@element)
-            puts("element added to: #{@path.inspect}")
             @result = true
         end
 
@@ -119,8 +119,65 @@ class SetContent < Visitor
     end
 end
 
+
+class ManageTag < Visitor
+
+    attr_reader :succeed
+
+    # Set an operation for tags
+    # Params:
+    # +image_path+:: path of image to be modified /vacations/sol.png
+    # +operation+:: could be 'add' or 'delete'
+    def initialize(image_path, tag, operation)
+
+        @image = nil
+
+        if(image_path == "")
+            @folders = [""]
+        else
+            @folders = image_path.split('/')
+            @image = @folders.pop()
+        end
+
+        @tag = tag
+        if operation != "add" and operation != "delete"
+            raise(UnknownTagOperation, "unknown tag operation: '#{operation}'")
+        end
+        @operation = operation
+
+        @path = []
+        @right_place = false
+        @succeed = false
+    end
+
+    def visit_ElemImage(subject)
+        temp_image = ElemImage.new(@image)
+
+        @right_place = @folders == @path
+
+        if @right_place and subject == temp_image
+            tag_method = "#{@operation}_tag"
+            subject.send(tag_method, @tag)
+            @succeed = true
+        end
+    end
+
+    def visit_ElemFolder(subject)
+        @path.push(subject.name)
+
+        subject.element_list.each{|elem|
+            elem.accept(self)
+        }
+
+        @path.pop()
+    end
+end
+
+
 def normalize_return_data(element, message_nil = "is nil")
+
     if element.nil?()
+        return_message = {}
         return_message[:status] = "error"
         return_message[:message] = message_nil
         return return_message
@@ -136,18 +193,24 @@ end
 def convert_list(element_list)
     return_message = []
     element_list.each{|elem| 
-        item = convert_to_hash(elem)
+        item = convert_to_hash(elem, return_as_list=true)
         return_message.push(item)
       }
     return return_message
 end
 
-def convert_to_hash(element)
+def convert_to_hash(element, return_as_list=false)
     item = {}
     item['name'] = element.name
     item['type'] = element.class.type_name
     if item['type'] == 'image'
-        item['preview'] = element.preview
+        if return_as_list == true
+            item['tags']    = element.tags
+            item['preview'] = element.preview
+        else
+            item['data'] = element.data
+        end
     end
+
     return item
 end
