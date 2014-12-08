@@ -71,9 +71,7 @@ class GetImage < Visitor
     def visit_ElemFolder(subject)
         @path.push(subject.name)
 
-        subject.element_list.each{|elem|
-            elem.accept(self)
-        }
+        subject.element_list.each{|elem| elem.accept(self) }
 
         @path.pop()
     end
@@ -170,6 +168,43 @@ class ManageTag < Visitor
         }
 
         @path.pop()
+    end
+end
+
+
+class GetShortImages < Visitor
+
+    # Get a list of images class, this class retrieve the name and path
+    # of all images for the given path
+    def initialize(image_path)
+
+        if(image_path == "")
+            @folders = [""]
+        else
+            @folders = image_path.split('/') #.reverse!()
+        end
+        @result = Array.new
+        @path = Array.new
+    end
+
+    def visit_ElemImage(subject)
+        belongs_to_path = @folders <=> @path
+        if belongs_to_path <= 0
+            @result.push( { "name" => subject.name,
+                            "path" => @path.rotate(1).join('/') } )
+        end
+    end
+
+    def visit_ElemFolder(subject)
+        @path.push(subject.name)
+
+        subject.element_list.each{|elem| elem.accept(self) }
+
+        @path.pop()
+    end
+
+    def get_result()
+        return @result
     end
 end
 

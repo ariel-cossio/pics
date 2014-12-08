@@ -174,3 +174,24 @@ post '/api/tag/content/*' do
   return_message.to_json
 
 end
+
+# Retrieve all images in a simplified way for the given folder.
+# folder e.g. http://localhost/api/name_images/content/my_folder/
+# returns a list [{"name":"images", "path":"my_folder/here/"}, ...]
+#
+get '/api/name_images/content/*' do
+  path = "/#{params[:splat][0]}"
+  path = path.chomp('/')
+
+  visitant = GetShortImages.new(path)
+  root.accept(visitant)
+  result = visitant.get_result
+
+  if result.nil?()
+    return_message[:status] = "error"
+    return_message[:message] = "no found '/api/name_images/content/#{params[:splat][0]}'"
+    return_message.to_json
+  end
+
+  result.to_json
+end
