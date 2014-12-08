@@ -167,20 +167,20 @@ Feature: manage resources by REST
 
     Scenario: List all images that are inside root folder in simple format
 
-        When GET "api/all/content/"
+        When GET "api/name_images/content/"
         Then I expect HTTP code 200
         And I expect JSON with preview equivalent to
         """
-        [{"name":"Clint-Eastwood.jpg", "path":""}, {"name":"blue_eyes_wolf.jpg", "path":"animals/"}, {"name":"bear_swimming.jpg", "path":"animals/bears/"}]
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/"}, {"name":"blue_eyes_wolf.jpg", "path":"animals/"}, {"name":"Clint-Eastwood.jpg", "path":""}]
         """
 
     Scenario: List all images that are inside a given folder in simple format
 
-        When GET "api/all/content/animals/"
+        When GET "api/name_images/content/animals/"
         Then I expect HTTP code 200
         And I expect JSON with preview equivalent to
         """
-        [{"name":"blue_eyes_wolf.jpg", "path":""}, {"name":"bear_swimming.jpg", "path":"bears/"}]
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/"}, {"name":"blue_eyes_wolf.jpg", "path":"animals/"}]
         """
 
     Scenario: Obtain all images that meet a given string
