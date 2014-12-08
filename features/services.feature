@@ -189,7 +189,7 @@ Feature: manage resources by REST
         Then I expect HTTP code 200
         And I expect JSON with preview equivalent to
         """
-        [{"name":"bear_swimming.jpg", "path":"animals/bears/"}]
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/", "preview":"bear_swimming_preview"}]
         """
 
     Scenario: Obtain all images that meet a given string for root folder
@@ -198,5 +198,5 @@ Feature: manage resources by REST
         Then I expect HTTP code 200
         And I expect JSON with preview equivalent to
         """
-        [{"name":"bear_swimming.jpg", "path":"animals/bears/"}, {"name":"Clint-Eastwood.jpg", "path":""}]
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/", "preview":"bear_swimming_preview"}, {"name":"Clint-Eastwood.jpg", "path":"", "preview":"clint_eastwood_preview"}]
         """

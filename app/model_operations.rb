@@ -232,8 +232,8 @@ class GetMatchImages < Visitor
         if belongs_to_path <= 0 and subject.name.include?(@text)
             @result.push( {
                 "name" => subject.name,
-                "path" => @path.rotate(1).join('/')
-                #"preview" => subject.preview
+                "path" => @path.rotate(1).join('/'),
+                "preview" => subject.preview
                 } )
         end
     end
