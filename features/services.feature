@@ -159,3 +159,44 @@ Feature: manage resources by REST
         """
         [{"name":"bear_swimming.jpg", "type":"image", "tags":["swim", "polar"], "preview":"bear_swimming_preview"}]
         """
+
+
+
+#Feature: Search services
+#    As a user I should be able to seach an image by name or tag
+
+    Scenario: List all images that are inside root folder in simple format
+
+        When GET "api/name_images/content/"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/"}, {"name":"blue_eyes_wolf.jpg", "path":"animals/"}, {"name":"Clint-Eastwood.jpg", "path":""}]
+        """
+
+    Scenario: List all images that are inside a given folder in simple format
+
+        When GET "api/name_images/content/animals/"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/"}, {"name":"blue_eyes_wolf.jpg", "path":"animals/"}]
+        """
+
+    Scenario: Obtain all images that meet a given string
+
+        When GET "api/search/content/animals?text=wi"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/", "preview":"bear_swimming_preview"}]
+        """
+
+    Scenario: Obtain all images that meet a given string for root folder
+
+        When GET "api/search/content/?text=in"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/", "preview":"bear_swimming_preview"}, {"name":"Clint-Eastwood.jpg", "path":"", "preview":"clint_eastwood_preview"}]
+        """

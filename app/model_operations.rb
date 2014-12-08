@@ -71,9 +71,7 @@ class GetImage < Visitor
     def visit_ElemFolder(subject)
         @path.push(subject.name)
 
-        subject.element_list.each{|elem|
-            elem.accept(self)
-        }
+        subject.element_list.each{|elem| elem.accept(self) }
 
         @path.pop()
     end
@@ -174,6 +172,84 @@ class ManageTag < Visitor
 end
 
 
+class GetShortImages < Visitor
+
+    # Get a list of images class, this class retrieve the name and path
+    # of all images for the given path
+    def initialize(image_path)
+
+        if(image_path == "")
+            @folders = [""]
+        else
+            @folders = image_path.split('/') #.reverse!()
+        end
+        @result = Array.new
+        @path = Array.new
+    end
+
+    def visit_ElemImage(subject)
+        belongs_to_path = @folders <=> @path
+        if belongs_to_path <= 0
+            @result.push( {
+                "name" => subject.name,
+                "path" => @path.rotate(1).join('/')
+                } )
+        end
+    end
+
+    def visit_ElemFolder(subject)
+        @path.push(subject.name)
+
+        subject.element_list.each{|elem| elem.accept(self) }
+
+        @path.pop()
+    end
+
+    def get_result()
+        return @result
+    end
+end
+
+
+class GetMatchImages < Visitor
+
+    # Get a list of images class, this class retrieve the name and path
+    # of all images for the given path
+    def initialize(folder_path, text)
+
+        if(folder_path == "")
+            @folders = [""]
+        else
+            @folders = folder_path.split('/') #.reverse!()
+        end
+        @text = text
+        @result = Array.new
+        @path = Array.new
+    end
+
+    def visit_ElemImage(subject)
+        belongs_to_path = @folders <=> @path
+        if belongs_to_path <= 0 and subject.name.include?(@text)
+            @result.push( {
+                "name" => subject.name,
+                "path" => @path.rotate(1).join('/'),
+                "preview" => subject.preview
+                } )
+        end
+    end
+
+    def visit_ElemFolder(subject)
+        @path.push(subject.name)
+        subject.element_list.each{|elem| elem.accept(self) }
+        @path.pop()
+    end
+
+    def get_result()
+        return @result
+    end
+end
+
+
 def normalize_return_data(element, message_nil = "is nil")
 
     if element.nil?()
@@ -184,32 +260,29 @@ def normalize_return_data(element, message_nil = "is nil")
     end
 
     if element.kind_of?(Array)
-        return convert_list(element)
+        return convert_list(element, 'tags', 'preview')
     else
-        return convert_to_hash(element)
+        return convert_to_hash(element, 'data')
     end
 end
 
-def convert_list(element_list)
+def convert_list(element_list, *fields)
     return_message = []
     element_list.each{|elem| 
-        item = convert_to_hash(elem, return_as_list=true)
+        item = convert_to_hash(elem, *fields)
         return_message.push(item)
       }
     return return_message
 end
 
-def convert_to_hash(element, return_as_list=false)
+def convert_to_hash(element, *attributes)
     item = {}
     item['name'] = element.name
     item['type'] = element.class.type_name
     if item['type'] == 'image'
-        if return_as_list == true
-            item['tags']    = element.tags
-            item['preview'] = element.preview
-        else
-            item['data'] = element.data
-        end
+        attributes.each{|attrib|
+            item[attrib] = element.send(attrib)
+        }
     end
 
     return item
