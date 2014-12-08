@@ -195,3 +195,14 @@ get '/api/name_images/content/*' do
 
   result.to_json
 end
+
+
+get "/api/search/content/*" do
+  path = "/#{params[:splat][0]}"
+  search_str = params[:text]
+
+  visitant = GetMatchImages.new(path, search_str)
+  root.accept(visitant)
+  images_list = visitant.get_result()
+  images_list.to_json
+end

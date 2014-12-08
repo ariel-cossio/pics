@@ -185,18 +185,18 @@ Feature: manage resources by REST
 
     Scenario: Obtain all images that meet a given string
 
-        When GET "api/search/content/animals?text=wi" using json
+        When GET "api/search/content/animals?text=wi"
         Then I expect HTTP code 200
         And I expect JSON with preview equivalent to
         """
-        [{"name":"bear_swimming.jpg", "path":"bears/"}]
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/"}]
         """
 
     Scenario: Obtain all images that meet a given string for root folder
 
-        When GET "api/search/content?text=in" using json
+        When GET "api/search/content/?text=in"
         Then I expect HTTP code 200
         And I expect JSON with preview equivalent to
         """
-        [{"name":"Clint-Eastwood.jpg", "path":""}, {"name":"bear_swimming.jpg", "path":"animals/bears/"}]
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/"}, {"name":"Clint-Eastwood.jpg", "path":""}]
         """
