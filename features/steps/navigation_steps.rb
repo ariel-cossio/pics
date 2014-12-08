@@ -9,3 +9,11 @@ end
 When(/^I select the "(.*?)" user option$/) do |option|
   step 	'I set the dropdown ".dropdown-menu li" as "'+option+'"'
 end
+
+Then(/^I should see the menu "(.*?)"$/) do |menu_option|
+  pending # express the regexp above with the code you wish you had
+end
+
+When(/^I select the "(.*?)" menu option$/) do |menu_option|
+  pending # express the regexp above with the code you wish you had
+end
