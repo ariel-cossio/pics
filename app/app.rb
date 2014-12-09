@@ -96,6 +96,13 @@ get '/secure/gallery' do
   erb  :gallery
 end 
 
+post '/secure/gallery/search' do
+  pics_obj = PicsRestClient.new()
+  text_to_search = params['search']
+  @items_search = pics_obj.search_image(text_to_search,"/api/content")
+  erb  :gallery
+end
+
 get '/secure/load_file' do
   erb :load_file
 end
@@ -140,12 +147,6 @@ post '/signin/attempt' do
   where_user_came_from = session[:previous_url] || '/secure/gallery'
   redirect to where_user_came_from
 end
-
-get '/secure/search' do
-  pics_obj = PicsRestClient.new()
-  @items = pics_obj.get_content("/api/content")
-  erb  :search
-end 
 
 #############
 # Rest client
@@ -214,6 +215,16 @@ class PicsRestClient
         f.close
     end
     return IMAGES + path_name
+  end
+
+  def search_image(search_text, folder_path)
+    final_url = "http://localhost:4567#{folder_path}"
+    response = RestClient.get final_url, {:params => {:text => search_text}}
+    res = Array.new
+    response.each{|elem|
+      res.push(elem.name)
+    }
+    res
   end
   
   def normalize(url)
