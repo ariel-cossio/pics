@@ -5,6 +5,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<!-- Bootstrap -->
 		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+		<link href="/css/bootstrap-tagsinput.css" rel="stylesheet">
+		<link href="/css/bootstrapValidator.min.css" rel="stylesheet">
 		<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
 		<!--[if lt IE 9]>
@@ -16,6 +18,18 @@
    		<script src="http://markusslima.github.io/bootstrap-filestyle/js/bootstrap-filestyle.min.js"></script>
         <!-- Include all compiled plugins (below), or include individual files as needed -->
     	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    	<script src="/js/bootbox.min.js"></script>
+    	<script src="/js/bootstrap-tagsinput.min.js"></script>
+    	<script src="/js/bootstrapValidator.min.js"></script>
+    	<script>
+    		function delete_content(name, url){
+    			bootbox.confirm("Are you sure to delete '"+name+"'?", function(result) {
+    				if(result){
+    					location = url
+    				}
+				}); 
+    		}
+    	</script>
 	</head>
 
 	<body>
@@ -35,10 +49,9 @@
 			  <div class="navbar-collapse collapse">
 			    <ul class="nav navbar-nav">
 			      <% if session[:identity] %>
-			      <li><a href="/secure/gallery">Gallery</a></li>
-			      <li><a href="/secure/add_folder">Add Folder</a></li>
-			      <li><a href="/secure/load_file">Add Picture</a></li>
-			      <li><a href="/secure/search">Search Picture</a></li>
+			      <li><a href="/secure/gallery/">Gallery</a></li>
+			      <li><a href="/secure/add_folder/<%=@root_folder%>">Add Folder</a></li>
+			      <li><a href="/secure/load_file/<%=@root_folder%>">Add Picture</a></li>
 			      <% end %>
 			    </ul>
 			    <ul class="nav navbar-nav navbar-right">
