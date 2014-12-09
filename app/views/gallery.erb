@@ -8,13 +8,35 @@
                 <small>/</small>
             </h1>
         </div>
+    <form action='/secure/gallery/search' method='post' class="form-inline well">
         <div class="col-lg-12">
             <label for="searchtext">Introduce the picture name:</label>
             <input type="search" class="form-control" id="search" name="search"><br>
             <input type="submit" class="btn btn-primary" value="Search">
         </div>
+    </form>
     </div>
     <!-- /.row -->
+
+
+    <!-- Projects Row -->
+    <div class="row">
+    <% items = search_image.each do |item| %>
+    <% @items_search.each do |item| %>
+        <div class="col-md-4 portfolio-item">
+            <a href="#">
+                <img style="max-height: 300px; max-width: 300px;" class="img-responsive img-rounded" src="<%=item.url %>" alt="">
+            </a>
+            <h3>
+                <a href="#"><%= item.name %></a>
+            </h3>
+            <p>
+                <a href="#">Delete</a> | <a href="#">Move</a>
+            </p>
+        </div>
+    <% end %>
+    </div>
+
 
     <!-- Projects Row -->
     <div class="row">
