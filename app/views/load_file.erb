@@ -2,7 +2,7 @@
 	<form  src='/secure/load_file' method='POST' enctype='multipart/form-data' class="well">
 		<div class="form-group">
           <label for="filename">File:</label>
-          <input name="fileName" type="file" class="filestyle" id="filename" data-buttonName="btn-primary">
+          <input name="fileName" type="file" class="filestyle" id="filename" data-buttonName="btn-primary" onchange="fileSelected();">
     	</div>
     	<div class="form-group">
 	          <label for="displayname">Display Name:</label>
@@ -14,10 +14,11 @@
 	    </div>
 		<p >
 		<br/>
-			<input name="upload" class="btn btn-primary" type='submit' value='Upload' />
+			<input name="upload" id="upload" class="btn btn-primary" type='submit' value='Upload' />
 			<input name="cancel" class="btn btn-primary" type='submit' value='Cancel' />
 		</p>
-		<script>
+		<script type="text/javascript" src="/js/jquery_load_file.js"></script>
+		<script type="text/javascript">
 			$(":file").filestyle({buttonName: "btn-primary"});
 		</script>
 	</form>

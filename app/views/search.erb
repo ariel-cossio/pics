@@ -12,6 +12,14 @@
     <!-- /.row -->
 
     <!-- Projects Row -->
+    <form src='/secure/search' method='POST' class="well">
+            <div class="form-group">
+                <label for="searchtext">Introduce the picture name:</label>
+                <input type="search" class="form-control" id="search" name="search"><br>
+                <input type="submit" class="btn btn-primary" value="Search">
+            </div>
+    </form>
+
     <div class="row">
     <% @items.each do |item| %>
         <div class="col-md-4 portfolio-item">

@@ -11,7 +11,7 @@ When(/^I select the "(.*?)" user option$/) do |option|
 end
 
 Then(/^I should see the menu "(.*?)"$/) do |menu_option|
-  pending # express the regexp above with the code you wish you had
+  page.find('nav navbar-nav li a')
 end
 
 When(/^I select the "(.*?)" menu option$/) do |menu_option|
