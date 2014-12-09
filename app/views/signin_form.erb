@@ -6,8 +6,8 @@
 </div>
 <div class="container">
 	<form action='/signin/attempt' method='post' class="form-inline well">
-	  <input type="text" name='username' placeholder="username" autofocus  required>
-	  <input type="email" name="email" placeholder="email" autofocus  required>
+	  <input type="text" name="user[username]" placeholder="username" autofocus  required>
+	  <input type="password" name="user[password]" placeholder="password" autofocus  required>
 	  <input class="btn btn-primary" type='submit' value='Sign in'>
 	</form>
 </div>
