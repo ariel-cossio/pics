@@ -99,7 +99,7 @@ end
 post '/secure/gallery/search' do
   pics_obj = PicsRestClient.new()
   text_to_search = params['search']
-  @items_search = pics_obj.search_image(text_to_search,"/api/content")
+  @items = pics_obj.search_image(text_to_search,"/api/content")
   erb  :gallery
 end
 
@@ -218,13 +218,10 @@ class PicsRestClient
   end
 
   def search_image(search_text, folder_path)
-    final_url = "http://localhost:4567#{folder_path}"
-    response = RestClient.get final_url, {:params => {:text => search_text}}
-    res = Array.new
-    response.each{|elem|
-      res.push(elem.name)
-    }
-    res
+    final_url = "http://localhost:4567#{folder_path}?#{search_text}"
+    response = RestClient.get final_url, {:params => {}}
+    items = JSON.parse(response.body)
+    items
   end
   
   def normalize(url)
