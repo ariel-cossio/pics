@@ -18,24 +18,6 @@ require_relative 'rest_services'
 $host = "127.0.0.1"
 $port = 4567
 
-class Item
-
-  attr_accessor :id
-  attr_accessor :url
-  attr_accessor :name
-  attr_accessor :type
-
-
-  def initialize(id, url, name, type)
-    @id  = id
-    @url  = url
-    @name  = name
-    @type  = type
-  end
-
-end
-
-
 configure do
   enable :sessions
 end
@@ -55,6 +37,7 @@ before '/secure/*' do
 end
 
 get '/' do
+  @root_folder = "/" 
 	erb :index
 end
 
@@ -73,7 +56,7 @@ end
 post '/login/attempt' do
   @username	= params['username']
   session[:identity] = @username
-  where_user_came_from = session[:previous_url] || '/secure/gallery'
+  where_user_came_from = session[:previous_url] || '/secure/gallery/'
   redirect to where_user_came_from 
 end
 
@@ -90,9 +73,16 @@ get '/logout' do
   erb "<div class='alert alert-message'>Logged out</div>"
 end	
 
-get '/secure/gallery' do
+get '/secure/gallery/*' do |path|
+  @root_folder = "#{path}"  
   pics_obj = PicsRestClient.new()
-  @items = pics_obj.get_content("/api/content")
+  
+  @items = pics_obj.get_content(@root_folder)
+
+  if @items.is_a?(Hash)
+    @error = @items['message'] 
+    @items =[]
+  end
   erb  :gallery
 end 
 
@@ -103,13 +93,16 @@ post '/secure/gallery/search' do
   erb  :gallery
 end
 
-get '/secure/load_file' do
+get '/secure/load_file*' do |path|
+  @root_folder = "/#{path}"
   erb :load_file
 end
 
-post '/secure/load_file' do 
+post '/secure/load_file*' do |path|
+    @root_folder = "/#{path}" 
 
     picture_to_upload = params["picturetoupload"]
+    tags = params['tags']
 
     f_thumb = picture_to_upload[:tempfile]
     thumb_s = f_thumb.read
@@ -117,24 +110,27 @@ post '/secure/load_file' do
     f_thumb.close
 
     picture_obj = PicsRestClient.new()
-    result = picture_obj.add_content("#{picture_to_upload[:filename]}", "image", content)
-    # :TODO Add code to display warning message if image is not following some standards
-    # :TODO Add code to save Display name and tags.
+    result = picture_obj.add_content(@root_folder, "#{picture_to_upload[:filename]}", "image", content, tags)
 
-  redirect to '/secure/gallery'
+    # :TODO Add code to save Display name
+    url = "/secure/gallery/#{path}"
+    redirect to url
 end
 
-get '/secure/add_folder' do
+get '/secure/add_folder*' do |path|
+  @root_folder = "/#{path}"
   erb :add_folder
 end
 
-post '/secure/add_folder' do
+post '/secure/add_folder*' do |path|
+  @root_folder = "/#{path}"
 
   folder_name = params["folderName"]
   folder_obj = PicsRestClient.new()
-  result = folder_obj.add_content("/#{folder_name}", "folder", "")
+  result = folder_obj.add_content(@root_folder, "#{folder_name}", "folder", "", "")
   # :TODO add code to display warning message when folder is not created
-  redirect to '/secure/gallery'
+  url = "/secure/gallery#{path}"
+  redirect to url
 end
 
 get '/signin/form' do
@@ -166,20 +162,25 @@ class PicsRestClient
   #
   # Params:
   # +url+:: /api/content
-  def get_content(url)
-    final_url = "http://localhost:4567#{url}"
+  def get_content(root_folder)
+
+    final_url = "http://localhost:4567/api/content/#{root_folder}"
     response = RestClient.get final_url, {:params => {}}
     items = JSON.parse(response.body)
     items
   end
 
-  def add_content(path_name, type, content)
+  def add_content(root_folder, path_name, type, content, tags)
     boundary = "AaB03xxA"
-    url = "/api/add/content"
+    url = "/api/add/content#{root_folder}"
     final_url = "http://localhost:4567#{url}"
+    if tags != ""
+      tags = tags.split(",")
+    end
 
     response = RestClient.post final_url,:data => {:type=>type, :name=>path_name, 
-                                                   :data => content}.to_json, :accept => :json
+                                                   :data => content, :tags => tags}.to_json, 
+                                                   :accept => :json
 
     items = JSON.parse(response.body)
     $message_status = items["message"]
