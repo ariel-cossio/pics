@@ -5,7 +5,7 @@
     <div class="row">
         <div class="col-lg-12">
             <h1 class="page-header"><%=session[:identity]%>'s Gallery
-                <small>/</small>
+                <small><%= @root_folder %></small>
             </h1>
         </div>
     <form action='/secure/gallery/search' method='post' class="form-inline well">
@@ -19,22 +19,55 @@
     <!-- /.row -->
 
     <!-- Projects Row -->
-    <div class="row" id='item'>
-    <% @items.each do |item| %>
+    <div class="row">
+
+    <% 
+        @items.each do |item| 
+            @url_delete = item['type'] != 'folder' ? '/secure/delete_content/'+@root_folder+item['name'] : '/secure/delete_content/'+@root_folder+item['name']+'/'
+            @gallery_url = item['type'] != 'folder' ? '/secure/gallery/'+@root_folder+item['name'] : '/secure/gallery/'+@root_folder+item['name']+'/'
+            @current_img_url = item['type'] != 'folder' ? 'data:image/png;base64,'+item['preview'] : '/resources/folder.png'
+    %>
         <div class="col-md-4 portfolio-item">
-            <a href="#">
-                <img style="max-height: 300px; max-width: 300px;" class="img-responsive img-rounded" src="<%=item.url %>" alt="">
+            <a href="<%= @gallery_url %>">
+                <img style="max-height: 300px; max-width: 300px;" class="img-responsive img-rounded" src="<%= @current_img_url %>" alt="">
+
             </a>
             <h3>
-                <a href="#"><%= item.name %></a>
+                <a href="<%= @gallery_url %>"><%= item['name'] %></a>
             </h3>
             <p>
-                <a href="#">Delete</a> | <a href="#">Move</a>
+                <a href="javascript:delete_content('<%= item['name'] %>', '<%= @url_delete%>')">Delete</a> | <a href="#">Move</a>
+                
+                <% if item['tags'] %>
+                <p>
+                    <% @items = ""
+                        item['tags'].each do |tag| 
+                        @items = @items+ tag+","
+                       end %>
+                    <input type="text" value="<%= @items %>" data-role="tagsinput" />
             </p>
-        </div>
+    <% end %>
+            </p>
+        </div>  
     <% end %>
     </div>
 </div>
 <!-- /end row -->
 </div>
 <!-- /.container -->
+
+<script>
+    $('input').on('beforeItemRemove', function(event) {
+        console.log(event.item)
+        $.ajax({
+                type: "POST",
+                url: "/api/tag/content/",
+                data: { tag: event.item, operation: "Remove" }
+                })
+.done(function( msg ) {
+alert( "Data Saved: " + msg );
+});
+         // event.cancel: set to true to prevent the item getting removed
+    });
+
+</script>
