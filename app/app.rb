@@ -86,10 +86,11 @@ get '/secure/gallery/*' do |path|
   erb  :gallery
 end 
 
-post '/secure/gallery/search' do
+get '/secure/search/*' do |path|
+  @root_folder = "#{path}"
   pics_obj = PicsRestClient.new()
-  text_to_search = params['search']
-  @items = pics_obj.search_image(text_to_search,"/api/content")
+  text_to_search = params['text']
+  @items = pics_obj.search_image(text_to_search,@root_folder)
   erb  :gallery
 end
 
@@ -218,9 +219,9 @@ class PicsRestClient
     return IMAGES + path_name
   end
 
-  def search_image(search_text, folder_path)
-    final_url = "http://localhost:4567#{folder_path}?#{search_text}"
-    response = RestClient.get final_url, {:params => {}}
+  def search_image(search_text, root_folder)
+    search_url = "http://localhost:4567/api/search/content/#{root_folder}?text=#{search_text}"
+    response = RestClient.get search_url
     items = JSON.parse(response.body)
     items
   end
