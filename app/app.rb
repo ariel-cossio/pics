@@ -140,6 +140,13 @@ post '/signin/attempt' do
   where_user_came_from = session[:previous_url] || '/secure/gallery'
   redirect to where_user_came_from
 end
+
+get '/secure/search' do
+  pics_obj = PicsRestClient.new()
+  @items = pics_obj.get_content("/api/content")
+  erb  :search
+end 
+
 #############
 # Rest client
 #############
