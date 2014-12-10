@@ -4,6 +4,9 @@ require_relative 'model_operations'
 
 root = ElemFolder.new ""
 
+# Delete this image when user is integrated
+$user_verified = false
+
 #set :port, 8080
 
 # Retrieve the content of given data,
@@ -128,7 +131,7 @@ post '/api/add/content/*' do
   begin
     root.accept(visitant)
 
-  rescue DuplicateElementException => e 
+  rescue DuplicateElementException, NotVerifiedUserException => e 
     return_message[:status] = "error"
     return_message[:message] = e.message
     return return_message.to_json 

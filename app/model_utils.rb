@@ -6,6 +6,9 @@ end
 class UnknownTagOperation < Exception
 end
 
+class NotVerifiedUserException < Exception
+end
+
 module Comparable
   # Compare Elem objects by name and type_name
   def <=>(elem)

@@ -105,6 +105,12 @@ class SetContent < Visitor
         }
 
         if @folders == @path
+            puts("meet_condition: '#{meet_condition(subject)}'")
+            if not $user_verified and not meet_condition(subject) 
+                raise(NotVerifiedUserException, 
+                      "operation not permitted until you confirm your password")
+            end
+
             subject.add_element(@element)
             @result = true
         end
@@ -115,6 +121,27 @@ class SetContent < Visitor
     def get_result()
         return @result
     end
+
+    def meet_condition(folder)
+        if @element.class.type_name == "image"
+            puts("folder.image_number(): #{folder.image_number()}")
+            if folder.image_number() < 2
+                return true
+            else
+                return false
+            end
+        end
+
+        if @element.class.type_name == "folder"
+            puts("folder.folder_number(): #{folder.folder_number()}")
+            if folder.folder_number() < 2
+                return true
+            else
+                return false
+            end
+        end
+    end
+
 end
 
 
