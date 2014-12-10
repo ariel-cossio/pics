@@ -43,8 +43,10 @@ class PicsRestClient
 
     items = JSON.parse(response.body)
     $message_status = items["message"]
+
+
     if items["status"] != "succeed"
-      return false
+      return $message_status
     end
 
     if type == "image"
@@ -60,7 +62,7 @@ class PicsRestClient
     else
       raise "Type not supported"
     end
-    return path
+    return nil
   end
 
   def add_content_folder(path_name)

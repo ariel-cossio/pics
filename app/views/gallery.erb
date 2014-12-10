@@ -5,10 +5,10 @@
     <div class="row">
         <div class="col-lg-12">
             <h1 class="page-header"><%=session[:identity]%>'s Gallery
-                <small><%= @root_folder %></small>
+                <small>/<%= @root_folder %></small>
             </h1>
         </div>
-    <form action="/secure/search/<%= @root_folder %>" method='get' class="form-inline well">
+    <form action="/secure/search/<%= @root_folder %>" method='get' class="form-inline">
         <div class="col-lg-12">
             <label for="searchtext">Introduce the picture name:</label>
             <input type="search" class="form-control" id="text" name="text">
@@ -89,4 +89,11 @@
         });
     });
 
+    function delete_content(name, url){
+        bootbox.confirm("Are you sure to delete '"+name+"'?", function(result) {
+            if(result){
+                location = url
+            }
+        }); 
+    }
 </script>
