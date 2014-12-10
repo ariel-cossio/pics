@@ -111,9 +111,16 @@ post '/secure/load_file*' do |path|
     f_thumb.close
 
     rest_client = PicsRestClient.new()
-    result = rest_client.add_content(@root_folder, "#{picture_to_upload[:filename]}", "image", content, tags)
-    url = "/secure/gallery/#{path}"
-    redirect to url
+    error_message = rest_client.add_content(@root_folder, 
+                                            "#{picture_to_upload[:filename]}", 
+                                            "image", content, tags)
+    if error_message 
+      @error = error_message
+      erb :add_folder
+    else
+      url = "/secure/gallery/#{path}"
+      redirect to url
+    end
 end
 
 get '/secure/manage_tag_content*' do |path|
@@ -135,9 +142,14 @@ post '/secure/add_folder*' do |path|
 
   folder_name = params["folderName"]
   rest_client = PicsRestClient.new()
-  result = rest_client.add_content(@root_folder, "#{folder_name}", "folder", "", "")
-  url = "/secure/gallery#{path}"
-  redirect to url
+  error_message = rest_client.add_content(@root_folder, "#{folder_name}", "folder", "", "")
+  if error_message 
+    @error = error_message
+    erb :add_folder
+  else
+    url = "/secure/gallery#{path}"
+    redirect to url
+  end
 end
 
 get '/signin/form' do
