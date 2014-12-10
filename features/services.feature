@@ -278,3 +278,31 @@ Feature: manage resources by REST
         """
         [{"name":"bears","type":"folder"}, {"name":"blue_eyes_wolf.jpg", "type":"image", "tags":[], "preview":"blue_eyes_preview"}]
         """
+
+#Feature: Restriccion for not confirmed user
+#    As a user Not confirmed I shouldn't be able more than 2 folder and 2 images by folder
+
+    
+    Scenario: add a second folder is permitted
+
+        When POST "api/add/content/animals/" using json
+        """
+        { "type":"folder", "name":"cats" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"succeed", "message":"folder added succeedfuly" }
+        """
+
+    Scenario: add a third folder is not permitted
+
+        When POST "api/add/content/animals/" using json
+        """
+        { "type":"folder", "name":"pets" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"error", "message":"operation not permitted until you confirm your password" }
+        """
