@@ -7,6 +7,12 @@ root = ElemFolder.new ""
 # Delete this image when user is integrated
 $user_verified = false
 
+get '/api/verify_user/' do
+  bool = params[:value]
+  bool_value = eval(bool)
+  $user_verified = bool_value
+end
+
 #set :port, 8080
 
 # Retrieve the content of given data,
