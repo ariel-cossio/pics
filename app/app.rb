@@ -11,9 +11,12 @@ require '../features/support/http_services_helper'
 require 'rest-client'
 
 require_relative 'rest_services'
+require_relative 'rest_client'
 
-$host = "127.0.0.1"
-$port = 4567
+
+#############
+# Routers
+#############
 
 configure do
   enable :sessions
@@ -72,9 +75,9 @@ end
 
 get '/secure/gallery/*' do |path|
   @root_folder = "#{path}"  
-  pics_obj = PicsRestClient.new()
+  rest_client = PicsRestClient.new()
   
-  @items = pics_obj.get_content(@root_folder)
+  @items = rest_client.get_content(@root_folder)
 
   if @items.is_a?(Hash)
     @error = @items['message'] 
@@ -85,9 +88,9 @@ end
 
 get '/secure/search/*' do |path|
   @root_folder = "#{path}"
-  pics_obj = PicsRestClient.new()
+  rest_client = PicsRestClient.new()
   text_to_search = params['text']
-  @items = pics_obj.search_image(text_to_search,@root_folder)
+  @items = rest_client.search_image(text_to_search,@root_folder)
   erb  :gallery
 end
 
@@ -107,8 +110,8 @@ post '/secure/load_file*' do |path|
     content = Base64.encode64(thumb_s)
     f_thumb.close
 
-    picture_obj = PicsRestClient.new()
-    result = picture_obj.add_content(@root_folder, "#{picture_to_upload[:filename]}", "image", content, tags)
+    rest_client = PicsRestClient.new()
+    result = rest_client.add_content(@root_folder, "#{picture_to_upload[:filename]}", "image", content, tags)
     url = "/secure/gallery/#{path}"
     redirect to url
 end
@@ -118,8 +121,8 @@ get '/secure/manage_tag_content*' do |path|
 
   tag = params['tag']
   operation = params['operation']
-  picture_obj = PicsRestClient.new()
-  picture_obj.manage_tag_content(@root_file, tag, operation)
+  rest_client = PicsRestClient.new()
+  rest_client.manage_tag_content(@root_file, tag, operation)
 end
 
 get '/secure/add_folder*' do |path|
@@ -131,8 +134,8 @@ post '/secure/add_folder*' do |path|
   @root_folder = "/#{path}"
 
   folder_name = params["folderName"]
-  folder_obj = PicsRestClient.new()
-  result = folder_obj.add_content(@root_folder, "#{folder_name}", "folder", "", "")
+  rest_client = PicsRestClient.new()
+  result = rest_client.add_content(@root_folder, "#{folder_name}", "folder", "", "")
   url = "/secure/gallery#{path}"
   redirect to url
 end
@@ -144,107 +147,15 @@ end
 post '/signin/attempt' do
   @username = params['username']
   session[:identity] = @username
-  where_user_came_from = session[:previous_url] || '/secure/gallery'
+  where_user_came_from = session[:previous_url] || '/secure/gallery/'
   redirect to where_user_came_from
 end
 
-#############
-# Rest client
-#############
-
-class PicsRestClient
-
-  # :TODO add code to generate folder automatically when user is login
-  # Static user folder  ./public/pictures
-
-  IMAGES = "./public/pictures"
-
-  def initialize()
-    FileUtils::mkdir_p IMAGES
-  end
-
-  #
-  # Params:
-  # +url+:: /api/content
-  def get_content(root_folder)
-
-    final_url = "http://localhost:4567/api/content/#{root_folder}"
-    response = RestClient.get final_url, {:params => {}}
-    items = JSON.parse(response.body)
-    items
-  end
-
-  def add_content(root_folder, path_name, type, content, tags)
-    boundary = "AaB03xxA"
-    url = "/api/add/content#{root_folder}"
-    final_url = "http://localhost:4567#{url}"
-    if tags
-      tags = tags.split(",")
-    else
-      tags = []
-    end
-
-    response = RestClient.post final_url,:data => {:type=>type, :name=>path_name, 
-                                                   :data => content, :tags => tags}.to_json, 
-                                                   :accept => :json
-
-    items = JSON.parse(response.body)
-    $message_status = items["message"]
-    if items["status"] != "succeed"
-      return false
-    end
-
-    if type == "image"
-      
-      preview_data = items["preview"]
-      if preview_data == nil
-        return
-      end
-      path = add_content_image(path_name, preview_data)
-
-    elsif type == "folder"
-      path = add_content_folder(path_name)
-    else
-      raise "Type not supported"
-    end
-    return path
-  end
-
-  def add_content_folder(path_name)
-    FileUtils::mkdir_p IMAGES + path_name
-    return IMAGES + path_name
-  end
-
-  def add_content_image(path_name, preview_data)
-    
-    File.open(IMAGES + path_name, 'wb') do |f|
-        f.write(Base64.decode64(preview_data))
-        f.close
-    end
-    return IMAGES + path_name
-  end
-
-  def search_image(search_text, root_folder)
-    search_url = "http://localhost:4567/api/search/content/#{root_folder}?text=#{search_text}"
-    response = RestClient.get search_url
-    items = JSON.parse(response.body)
-    items
-  end
-  
-  def normalize(url)
-    return "http://#{$host}:#{$port}/#{url}"
-  end
-
-  def manage_tag_content(root_file, tag, operation)
-    boundary = "AaB03xxA"
-    url = "/api/tag/content#{root_file}"
-    final_url = "http://localhost:4567#{url}"
-    response = RestClient.post final_url,:data => {:tag=>tag, :operation=>operation}.to_json, 
-                                                   :accept => :json
-    items = JSON.parse(response.body)
-    $message_status = items["message"]
-    if items["status"] != "succeed"
-      return false
-    end
-  end
+get '/secure/delete_content*' do |path|
+  @content_to_delete = "/#{path}"
+  redirect_folder = params['redirect_folder']
+  rest_client = PicsRestClient.new()
+  rest_client.delete_content(@content_to_delete)
+  where_user_came_from =  "/secure/gallery/#{redirect_folder}"
+  redirect to where_user_came_from
 end

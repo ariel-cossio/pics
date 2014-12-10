@@ -26,6 +26,7 @@
     <% 
         @items.each do |item| 
             @url_delete = item['type'] != 'folder' ? '/secure/delete_content/'+@root_folder+item['name'] : '/secure/delete_content/'+@root_folder+item['name']+'/'
+            @url_delete += "?redirect_folder="+@root_folder
             @gallery_url = item['type'] != 'folder' ? '/secure/gallery/'+@root_folder+item['name'] : '/secure/gallery/'+@root_folder+item['name']+'/'
             @gallery_search_url = item['type'] != 'folder' ? '/secure/search/'+@root_folder+item['name'] : '/secure/search/'+@root_folder+item['name']+'/'
             @current_img_url = item['type'] != 'folder' ? 'data:image/png;base64,'+item['preview'] : '/resources/folder.png'
@@ -73,7 +74,6 @@
                 data: { tag: event.item, operation: "delete" }
                 })
         .done(function( msg ) {
-            alert( "Tag was deleted: " + msg );
         });
     });
 
