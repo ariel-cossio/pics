@@ -155,6 +155,24 @@ class ElemFolder < FSElement
     return @element_list
   end
 
+  def image_number()
+    get_number("image")
+  end
+
+  def folder_number()
+    get_number("folder")
+  end
+
+  def get_number(elem_type)
+    res = 0
+    @element_list.each{|elem|
+      if elem.class.type_name == elem_type
+        res = res + 1
+      end
+    }
+    return res
+  end
+
   # Return the name of the type value of this class
   def self.type_name
     @@type_name

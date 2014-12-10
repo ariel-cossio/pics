@@ -200,3 +200,109 @@ Feature: manage resources by REST
         """
         [{"name":"bear_swimming.jpg", "path":"animals/bears/", "preview":"bear_swimming_preview"}, {"name":"Clint-Eastwood.jpg", "path":"", "preview":"clint_eastwood_preview"}]
         """
+
+    Scenario: Search images by tags in folder
+        When GET "api/search_tag/content/?tags=swim"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/", "preview":"bear_swimming_preview"}]
+        """
+
+    Scenario: Add a tag for an existing image
+
+        When POST "api/tag/content/Clint-Eastwood.jpg" using json
+        """
+        { "operation":"add", "tag":"swim" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"succeed", "message":"tag 'swim' added" }
+        """
+
+    Scenario: Search images by several tags in folder
+        When GET "api/search_tag/content/?tags=swim,polar"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/", "preview":"bear_swimming_preview"}, {"name":"Clint-Eastwood.jpg", "path":"", "preview":"clint_eastwood_preview"}]
+        """
+
+    Scenario: Search images by tags in folder
+        When GET "api/search_tag/content/animals/?tags=swim,polar"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/", "preview":"bear_swimming_preview"}]
+        """
+
+#Feature: Remove elements
+#    As a user I should be able to delete element: images or folders
+
+    Scenario: Add an image to be deleted
+
+        When POST "api/add/content/animals/" using json
+        """
+        { "type":"image", "name":"husky.jpg", "tags":["polar", "cute"], "data":"husky_base64" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"succeed", "message":"image added succeedfuly" }
+        """
+
+    Scenario: Get Elements from a folder to be deleted
+
+        When GET "api/content/animals/"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bears","type":"folder"}, {"name":"blue_eyes_wolf.jpg", "type":"image", "tags":[], "preview":"blue_eyes_preview"}, {"name":"husky.jpg", "type":"image", "tags":["polar", "cute"], "preview":"husky_preview"}]
+        """
+
+    Scenario: Delete Element image
+
+        When GET "api/delete/content/animals/husky.jpg"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        { "status":"succeed", "message":"resource 'animals/husky.jpg' was deleted" }
+        """
+
+    Scenario: Get Elements again to verify element was really deleted
+
+        When GET "api/content/animals/"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bears","type":"folder"}, {"name":"blue_eyes_wolf.jpg", "type":"image", "tags":[], "preview":"blue_eyes_preview"}]
+        """
+
+#Feature: Restriccion for not confirmed user
+#    As a user Not confirmed I shouldn't be able more than 2 folder and 2 images by folder
+
+    
+    Scenario: add a second folder is permitted
+
+        When POST "api/add/content/animals/" using json
+        """
+        { "type":"folder", "name":"cats" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"succeed", "message":"folder added succeedfuly" }
+        """
+
+    Scenario: add a third folder is not permitted
+
+        When POST "api/add/content/animals/" using json
+        """
+        { "type":"folder", "name":"pets" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"error", "message":"operation not permitted until you confirm your password" }
+        """

@@ -4,6 +4,15 @@ require_relative 'model_operations'
 
 root = ElemFolder.new ""
 
+# Delete this image when user is integrated
+$user_verified = false
+
+get '/api/verify_user/' do
+  bool = params[:value]
+  bool_value = eval(bool)
+  $user_verified = bool_value
+end
+
 #set :port, 8080
 
 # Retrieve the content of given data,
@@ -41,6 +50,38 @@ get '/api/content/*' do
                       "no element found for '/api/content/#{params[:splat][0]}'")
   return_message.to_json
 end
+
+# Delete an element
+get '/api/delete/content/*' do
+  path = "/#{params[:splat][0]}"
+  #remove last character '/'
+  if path[-1] == "/"
+    path = path.chomp('/')
+  end
+
+  visitant = DeleteElement.new(path)
+  root.accept(visitant)
+  result = visitant.get_result
+
+  return_message = {}
+  if(result.nil?())
+    return_message[:status] = "error"
+    return_message[:message] = "unable to delete '#{params[:splat][0]}'"
+    return return_message.to_json 
+  end
+
+  if(result == true)
+    return_message[:status] = "succeed"
+    return_message[:message] = "resource '#{params[:splat][0]}' was deleted"
+    return return_message.to_json 
+  end
+
+  return_message[:status] = "error"
+  return_message[:message] = "unknown error trying to delete '#{params[:splat][0]}'"
+  return return_message.to_json 
+end
+
+
 
 
 # Add a content to the server, This content could be an image or a 
@@ -96,7 +137,7 @@ post '/api/add/content/*' do
   begin
     root.accept(visitant)
 
-  rescue DuplicateElementException => e 
+  rescue DuplicateElementException, NotVerifiedUserException => e 
     return_message[:status] = "error"
     return_message[:message] = e.message
     return return_message.to_json 
@@ -204,5 +245,17 @@ get "/api/search/content/*" do
   visitant = GetMatchImages.new(path, search_str)
   root.accept(visitant)
   images_list = visitant.get_result()
+  images_list.to_json
+end
+
+
+get "/api/search_tag/content/*" do
+  path = "/#{params[:splat][0]}"
+  tags = params[:tags].split(',')
+
+  visitant = GetImagesWithTag.new(path, tags)
+  root.accept(visitant)
+  images_list = visitant.get_result()
+
   images_list.to_json
 end
