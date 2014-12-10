@@ -200,3 +200,39 @@ Feature: manage resources by REST
         """
         [{"name":"bear_swimming.jpg", "path":"animals/bears/", "preview":"bear_swimming_preview"}, {"name":"Clint-Eastwood.jpg", "path":"", "preview":"clint_eastwood_preview"}]
         """
+
+    Scenario: Search images by tags in folder
+        When GET "api/search_tag/content/?tags=swim"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/", "preview":"bear_swimming_preview"}]
+        """
+
+    Scenario: Add a tag for an existing image
+
+        When POST "api/tag/content/Clint-Eastwood.jpg" using json
+        """
+        { "operation":"add", "tag":"swim" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"succeed", "message":"tag 'swim' added" }
+        """
+
+    Scenario: Search images by several tags in folder
+        When GET "api/search_tag/content/?tags=swim,polar"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/", "preview":"bear_swimming_preview"}, {"name":"Clint-Eastwood.jpg", "path":"", "preview":"clint_eastwood_preview"}]
+        """
+
+    Scenario: Search images by tags in folder
+        When GET "api/search_tag/content/animals/?tags=swim,polar"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bear_swimming.jpg", "path":"animals/bears/", "preview":"bear_swimming_preview"}]
+        """

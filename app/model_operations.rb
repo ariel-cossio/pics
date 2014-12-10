@@ -215,7 +215,7 @@ class GetMatchImages < Visitor
 
     # Get a list of images class, this class retrieve the name and path
     # of all images for the given path
-    def initialize(folder_path, text)
+    def initialize(folder_path, text = "")
 
         if(folder_path == "")
             @folders = [""]
@@ -230,6 +230,54 @@ class GetMatchImages < Visitor
     def visit_ElemImage(subject)
         belongs_to_path = @folders <=> @path
         if belongs_to_path <= 0 and subject.name.include?(@text)
+            @result.push( {
+                "name" => subject.name,
+                "path" => @path.rotate(1).join('/'),
+                "preview" => subject.preview
+                } )
+        end
+    end
+
+    def visit_ElemFolder(subject)
+        @path.push(subject.name)
+        subject.element_list.each{|elem| elem.accept(self) }
+        @path.pop()
+    end
+
+    def get_result()
+        return @result
+    end
+end
+
+
+class GetImagesWithTag < Visitor
+
+    # Get a list of images class, this class retrieve the name and path
+    # of all images for the given path
+    def initialize(folder_path, tags = "")
+
+        if(folder_path == "")
+            @folders = [""]
+        else
+            @folders = folder_path.split('/') #.reverse!()
+        end
+        @tags = tags
+        @result = Array.new
+        @path = Array.new
+    end
+
+    def visit_ElemImage(subject)
+        belongs_to_path = @folders <=> @path
+        has_tag = false
+
+        @tags.each{|tag|
+            if subject.tags.include?(tag)
+                has_tag = true
+                break
+            end
+        }
+
+        if belongs_to_path <= 0 and has_tag
             @result.push( {
                 "name" => subject.name,
                 "path" => @path.rotate(1).join('/'),

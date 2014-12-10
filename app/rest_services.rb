@@ -206,3 +206,15 @@ get "/api/search/content/*" do
   images_list = visitant.get_result()
   images_list.to_json
 end
+
+
+get "/api/search_tag/content/*" do
+  path = "/#{params[:splat][0]}"
+  tags = params[:tags].split(',')
+
+  visitant = GetImagesWithTag.new(path, tags)
+  root.accept(visitant)
+  images_list = visitant.get_result()
+
+  images_list.to_json
+end
