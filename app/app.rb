@@ -38,11 +38,11 @@ end
 
 get '/' do
   @root_folder = "/" 
-	erb :index
+  erb :index
 end
 
 get '/index' do
-	erb :index
+  erb :index
 end
 
 get '/welcome' do
@@ -54,7 +54,7 @@ get '/login/form' do
 end
 
 post '/login/attempt' do
-  @username	= params['username']
+  @username = params['username']
   session[:identity] = @username
   where_user_came_from = session[:previous_url] || '/secure/gallery/'
   redirect to where_user_came_from 
@@ -71,7 +71,7 @@ end
 get '/logout' do
   session.delete(:identity)
   erb "<div class='alert alert-message'>Logged out</div>"
-end	
+end 
 
 get '/secure/gallery/*' do |path|
   @root_folder = "#{path}"  
@@ -90,7 +90,15 @@ get '/secure/search/*' do |path|
   @root_folder = "#{path}"
   rest_client = PicsRestClient.new()
   text_to_search = params['text']
-  @items = rest_client.search_image(text_to_search,@root_folder)
+  @items = rest_client.search_image(text_to_search, @root_folder)
+  erb  :gallery
+end
+
+get '/secure/search_tag/*' do |path|
+  @root_folder = "#{path}"
+  rest_client = PicsRestClient.new()
+  tag_to_search = params['text_tag']
+  @items = rest_client.search_tag(tag_to_search, @root_folder)
   erb  :gallery
 end
 
