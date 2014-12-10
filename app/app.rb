@@ -12,9 +12,6 @@ require 'rest-client'
 
 require_relative 'rest_services'
 
-
-
-
 $host = "127.0.0.1"
 $port = 4567
 
@@ -111,10 +108,17 @@ post '/secure/load_file*' do |path|
 
     picture_obj = PicsRestClient.new()
     result = picture_obj.add_content(@root_folder, "#{picture_to_upload[:filename]}", "image", content, tags)
-
-    # :TODO Add code to save Display name
     url = "/secure/gallery/#{path}"
     redirect to url
+end
+
+get '/secure/manage_tag_content*' do |path|
+  @root_file = "#{path}"
+
+  tag = params['tag']
+  operation = params['operation']
+  picture_obj = PicsRestClient.new()
+  picture_obj.manage_tag_content(@root_file, tag, operation)
 end
 
 get '/secure/add_folder*' do |path|
@@ -128,7 +132,6 @@ post '/secure/add_folder*' do |path|
   folder_name = params["folderName"]
   folder_obj = PicsRestClient.new()
   result = folder_obj.add_content(@root_folder, "#{folder_name}", "folder", "", "")
-  # :TODO add code to display warning message when folder is not created
   url = "/secure/gallery#{path}"
   redirect to url
 end
@@ -174,8 +177,10 @@ class PicsRestClient
     boundary = "AaB03xxA"
     url = "/api/add/content#{root_folder}"
     final_url = "http://localhost:4567#{url}"
-    if tags != ""
+    if tags
       tags = tags.split(",")
+    else
+      tags = []
     end
 
     response = RestClient.post final_url,:data => {:type=>type, :name=>path_name, 
@@ -229,4 +234,16 @@ class PicsRestClient
     return "http://#{$host}:#{$port}/#{url}"
   end
 
+  def manage_tag_content(root_file, tag, operation)
+    boundary = "AaB03xxA"
+    url = "/api/tag/content#{root_file}"
+    final_url = "http://localhost:4567#{url}"
+    response = RestClient.post final_url,:data => {:tag=>tag, :operation=>operation}.to_json, 
+                                                   :accept => :json
+    items = JSON.parse(response.body)
+    $message_status = items["message"]
+    if items["status"] != "succeed"
+      return false
+    end
+  end
 end
