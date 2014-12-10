@@ -298,6 +298,48 @@ class GetImagesWithTag < Visitor
 end
 
 
+
+class DeleteElement < Visitor
+
+    # Delete the given element
+    # of all images for the given path
+    def initialize(path)
+
+        if(path == "")
+            @folders = [""]
+        else
+            @folders = path.split('/') #.reverse!()
+        end
+        @item = @folders.pop()
+        @result = nil
+        @path = Array.new
+    end
+
+    def visit_ElemImage(subject)
+    end
+
+    def visit_ElemFolder(subject)
+        @path.push(subject.name)
+
+        right_place = @folders == @path
+
+        subject.element_list.each{|elem|
+            if right_place and elem.name == @item
+                subject.remove_element(@item)
+                @result = true
+            end
+        }
+
+        subject.element_list.each{|elem| elem.accept(self) }
+        @path.pop()
+    end
+
+    def get_result()
+        return @result
+    end
+end
+
+
 def normalize_return_data(element, message_nil = "is nil")
 
     if element.nil?()

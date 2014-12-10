@@ -42,6 +42,38 @@ get '/api/content/*' do
   return_message.to_json
 end
 
+# Delete an element
+get '/api/delete/content/*' do
+  path = "/#{params[:splat][0]}"
+  #remove last character '/'
+  if path[-1] == "/"
+    path = path.chomp('/')
+  end
+
+  visitant = DeleteElement.new(path)
+  root.accept(visitant)
+  result = visitant.get_result
+
+  return_message = {}
+  if(result.nil?())
+    return_message[:status] = "error"
+    return_message[:message] = "unable to delete '#{params[:splat][0]}'"
+    return return_message.to_json 
+  end
+
+  if(result == true)
+    return_message[:status] = "succeed"
+    return_message[:message] = "resource '#{params[:splat][0]}' was deleted"
+    return return_message.to_json 
+  end
+
+  return_message[:status] = "error"
+  return_message[:message] = "unknown error trying to delete '#{params[:splat][0]}'"
+  return return_message.to_json 
+end
+
+
+
 
 # Add a content to the server, This content could be an image or a 
 # folder
