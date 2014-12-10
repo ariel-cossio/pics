@@ -8,11 +8,13 @@
                 <small><%= @root_folder %></small>
             </h1>
         </div>
-    <form action='/secure/gallery/search' method='post' class="form-inline well">
+    <form action="/secure/search/<%= @root_folder %>" method='get' class="form-inline well">
         <div class="col-lg-12">
             <label for="searchtext">Introduce the picture name:</label>
-            <input type="search" class="form-control" id="search" name="search">
+            <input type="search" class="form-control" id="text" name="text">
             <input type="submit" class="btn btn-primary" value="Search">
+            <br/>
+            <br/>
         </div>
     </form>
     </div>
@@ -25,8 +27,12 @@
         @items.each do |item| 
             @url_delete = item['type'] != 'folder' ? '/secure/delete_content/'+@root_folder+item['name'] : '/secure/delete_content/'+@root_folder+item['name']+'/'
             @gallery_url = item['type'] != 'folder' ? '/secure/gallery/'+@root_folder+item['name'] : '/secure/gallery/'+@root_folder+item['name']+'/'
+            @gallery_search_url = item['type'] != 'folder' ? '/secure/search/'+@root_folder+item['name'] : '/secure/search/'+@root_folder+item['name']+'/'
             @current_img_url = item['type'] != 'folder' ? 'data:image/png;base64,'+item['preview'] : '/resources/folder.png'
     %>
+
+
+
         <div class="col-md-4 portfolio-item">
             <a href="<%= @gallery_url %>">
                 <img style="max-height: 300px; max-width: 300px;" class="img-responsive img-rounded" src="<%= @current_img_url %>" alt="">
