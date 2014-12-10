@@ -236,3 +236,45 @@ Feature: manage resources by REST
         """
         [{"name":"bear_swimming.jpg", "path":"animals/bears/", "preview":"bear_swimming_preview"}]
         """
+
+#Feature: Remove elements
+#    As a user I should be able to delete element: images or folders
+
+    Scenario: Add an image to be deleted
+
+        When POST "api/add/content/animals/" using json
+        """
+        { "type":"image", "name":"husky.jpg", "tags":["polar", "cute"], "data":"husky_base64" }
+        """
+        Then I expect HTTP code 200
+        And I expect JSON equivalent to
+        """
+        { "status":"succeed", "message":"image added succeedfuly" }
+        """
+
+    Scenario: Get Elements from a folder to be deleted
+
+        When GET "api/content/animals/"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bears","type":"folder"}, {"name":"blue_eyes_wolf.jpg", "type":"image", "tags":[], "preview":"blue_eyes_preview"}, {"name":"husky.jpg", "type":"image", "tags":["polar", "cute"], "preview":"husky_preview"}]
+        """
+
+    Scenario: Delete Element image
+
+        When GET "api/delete/content/animals/husky.jpg"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        { "status":"succeed", "message":"resource 'animals/husky.jpg' was deleted" }
+        """
+
+    Scenario: Get Elements again to verify element was really deleted
+
+        When GET "api/content/animals/"
+        Then I expect HTTP code 200
+        And I expect JSON with preview equivalent to
+        """
+        [{"name":"bears","type":"folder"}, {"name":"blue_eyes_wolf.jpg", "type":"image", "tags":[], "preview":"blue_eyes_preview"}]
+        """
