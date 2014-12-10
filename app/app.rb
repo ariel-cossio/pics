@@ -192,7 +192,16 @@ post '/signin/attempt' do
   @username = env['warden'].user.username
   session[:identity] = @username
   flash[:success] = env['warden'].message
-  redirect '/secure/gallery'
+  redirect '/secure/gallery/'
+end
+
+post '/signup/attempt' do
+  username = params['username']
+  password = params['password']
+  new_user = User.new(:username => username)
+  new_user.password = password
+  new_user.save
+  redirect '/'
 end
 
 #############
