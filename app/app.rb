@@ -1,5 +1,7 @@
 require 'rubygems'
 require 'sinatra'
+require 'warden'
+require 'sinatra/flash'
 
 # Services import
 require 'net/http'
@@ -22,17 +24,53 @@ configure do
   enable :sessions
 end
 
-helpers do
-  def username
-    session[:identity] ? session[:identity] : 'Hello stranger'
+use Warden::Manager do |config|
+  # Tell Warden how to save our User info into a session.
+  # Sessions can only take strings, not Ruby code, we'll store
+  # the User's `id`
+  config.serialize_into_session{|user| user.id }
+  # Now tell Warden how to take what we've stored in the session
+  # and get a User from that information.
+  config.serialize_from_session{|id| User.get(id) }
+
+  config.scope_defaults :default,
+    # "strategies" is an array of named methods with which to
+    # attempt authentication. We have to define this later.
+    strategies: [:password],
+    # The action is a route to send the user to when
+    # warden.authenticate! returns a false answer. We'll show
+    # this route below.
+    action: 'auth/unauthenticated'
+  # When a user tries to log in and cannot, this specifies the
+  # app to send the user to.
+  config.failure_app = self
+end
+
+Warden::Manager.before_failure do |env,opts|
+    env['REQUEST_METHOD'] = 'POST'
+end
+
+Warden::Strategies.add(:password) do
+  def valid?
+    params['user'] && params['user']['username'] && params['user']['password']
+  end
+
+  def authenticate!
+    user = User.first(username: params['user']['username'])
+
+    if user.nil?
+      fail!("The username you entered does not exist.")
+    elsif user.authenticate(params['user']['password'])
+      success!(user)
+    else
+      fail!("Could not log in")
+    end
   end
 end
 
-before '/secure/*' do
-  if !session[:identity] then
-    session[:previous_url] = request.path
-    @error = 'Sorry, you need to be logged in to visit ' + request.path
-    halt erb(:index)
+helpers do
+  def username
+    session[:identity] ? session[:identity] : 'Hello stranger'
   end
 end
 
@@ -61,6 +99,7 @@ post '/login/attempt' do
 end
 
 get '/secure/place' do
+  env['warden'].authenticate!
   erb "This is a secret place that only <%=session[:identity]%> has access to!"
 end
 
@@ -69,11 +108,15 @@ post '/welcome' do
 end
 
 get '/logout' do
+  env['warden'].raw_session.inspect
+  env['warden'].logout
+  flash[:success] = 'Successfully logged out'
   session.delete(:identity)
   erb "<div class='alert alert-message'>Logged out</div>"
 end	
 
 get '/secure/gallery/*' do |path|
+  env['warden'].authenticate!
   @root_folder = "#{path}"  
   pics_obj = PicsRestClient.new()
   
@@ -94,6 +137,7 @@ post '/secure/gallery/search' do
 end
 
 get '/secure/load_file*' do |path|
+  env['warden'].authenticate!
   @root_folder = "/#{path}"
   erb :load_file
 end
@@ -118,6 +162,7 @@ post '/secure/load_file*' do |path|
 end
 
 get '/secure/add_folder*' do |path|
+  env['warden'].authenticate!
   @root_folder = "/#{path}"
   erb :add_folder
 end
@@ -137,11 +182,26 @@ get '/signin/form' do
   erb :signin_form
 end
 
+get '/signup/form' do
+  erb :signup_form
+end
+
+
 post '/signin/attempt' do
-  @username = params['username']
+  env['warden'].authenticate!
+  @username = env['warden'].user.username
   session[:identity] = @username
-  where_user_came_from = session[:previous_url] || '/secure/gallery'
-  redirect to where_user_came_from
+  flash[:success] = env['warden'].message
+  redirect '/secure/gallery/'
+end
+
+post '/signup/attempt' do
+  username = params['username']
+  password = params['password']
+  new_user = User.new(:username => username)
+  new_user.password = password
+  new_user.save
+  redirect '/'
 end
 
 #############
