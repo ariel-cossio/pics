@@ -85,13 +85,6 @@ class PicsRestClient
     items = JSON.parse(response.body)
     items
   end
-
-  def search_tag(tag_to_search, root_folder)
-    search_url = "http://localhost:4567/api/search_tag/content/#{root_folder}?tags=#{tag_to_search}"
-    response = RestClient.get search_url
-    items = JSON.parse(response.body)
-    items
-  end
   
   def normalize(url)
     return "http://#{$host}:#{$port}/#{url}"

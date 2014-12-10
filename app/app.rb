@@ -90,15 +90,7 @@ get '/secure/search/*' do |path|
   @root_folder = "#{path}"
   rest_client = PicsRestClient.new()
   text_to_search = params['text']
-  @items = rest_client.search_image(text_to_search, @root_folder)
-  erb  :gallery
-end
-
-get '/secure/search_tag/*' do |path|
-  @root_folder = "#{path}"
-  rest_client = PicsRestClient.new()
-  tag_to_search = params['text_tag']
-  @items = rest_client.search_tag(tag_to_search, @root_folder)
+  @items = rest_client.search_image(text_to_search,@root_folder)
   erb  :gallery
 end
 
